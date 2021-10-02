@@ -5,7 +5,7 @@ type MiddlewareBefore interface {
 }
 
 type MiddlewareAfter interface {
-	After(ctx *Ctx) (err error)
+	After(ctx *Ctx, cmdError error) (err error)
 }
 
 type Middleware interface {

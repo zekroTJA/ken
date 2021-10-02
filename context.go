@@ -5,14 +5,20 @@ import (
 	"github.com/zekrotja/ken/state"
 )
 
+// Ctx holds the invokation context of
+// a command.
 type Ctx struct {
 	ObjectMap
 
 	st state.State
 	dp ObjectProvider
 
+	// Session holds the discordgo session instance.
 	Session *discordgo.Session
-	Event   *discordgo.InteractionCreate
+	// Event provides the InteractionCreate event
+	// instance.
+	Event *discordgo.InteractionCreate
+	// Command provides the called command instance.
 	Command Command
 }
 
@@ -55,7 +61,7 @@ func (c *Ctx) Channel() (*discordgo.Channel, error) {
 	return c.st.Channel(c.Session, c.Event.ChannelID)
 }
 
-func (c *Ctx) Get(key interface{}) (v interface{}) {
+func (c *Ctx) Get(key string) (v interface{}) {
 	if v = c.ObjectMap.Load(key); v == nil && c.dp != nil {
 		v = c.dp.Load(key)
 	}

@@ -1,3 +1,6 @@
+// Package ken provides an object-oriented and
+// highly modular slash command handler for
+// discordgo.
 package ken
 
 import (
@@ -8,6 +11,26 @@ import (
 	"github.com/zekrotja/ken/state"
 )
 
+// Options holds configurations for Ken.
+type Options struct {
+	// State specifies the state manager to be used.
+	// When not specified, the default discordgo state
+	// manager is used.
+	State state.State
+	// DependencyProvider can be used to inject dependencies
+	// to be used in a commands or middlewares Ctx by
+	// a string key.
+	DependencyProvider ObjectProvider
+	// OnSystemError is called when a recoverable
+	// system error occurs inside Ken's lifecycle.
+	OnSystemError func(context string, err error, args ...interface{})
+	// OnCommandError is called when an error occurs
+	// during middleware or command execution.
+	OnCommandError func(err error, ctx *Ctx)
+}
+
+// Ken is the handler to register, manage and
+// life-cycle commands as well as middlewares.
 type Ken struct {
 	s   *discordgo.Session
 	opt *Options
@@ -21,13 +44,6 @@ type Ken struct {
 	mwAfter  []MiddlewareAfter
 }
 
-type Options struct {
-	State              state.State
-	DependencyProvider ObjectProvider
-	OnSystemError      func(context string, err error, args ...interface{})
-	OnCommandError     func(err error, ctx *Ctx)
-}
-
 var defaultOptions = Options{
 	State: state.NewInternal(),
 	OnSystemError: func(ctx string, err error, args ...interface{}) {
@@ -38,6 +54,12 @@ var defaultOptions = Options{
 	},
 }
 
+// New initializes a new instance of Ken with
+// the passed discordgo Session s and optional
+// Options.
+//
+// If no options are passed, default parameters
+// will be applied.
 func New(s *discordgo.Session, options ...Options) (k *Ken) {
 	k = &Ken{
 		s:      s,
@@ -72,6 +94,11 @@ func New(s *discordgo.Session, options ...Options) (k *Ken) {
 	return
 }
 
+// RegisterCommands registers the passed commands to
+// the command register.
+//
+// Keep in mind that commands are registered by Name,
+// so there can be only one single command per name.
 func (k *Ken) RegisterCommands(cmds ...Command) (err error) {
 	k.cmdsLock.Lock()
 	defer k.cmdsLock.Unlock()
@@ -87,6 +114,19 @@ func (k *Ken) RegisterCommands(cmds ...Command) (err error) {
 	return
 }
 
+// RegisterMiddlewares allows to register passed
+// commands to the middleware callstack.
+//
+// Therefore, you can register MiddlewareBefore,
+// which is called before the command handler is
+// executed, or MiddlewareAfter, which is called
+// directly after the command handler has been
+// called. Of course, you can also implement both
+// interfaces in the same middleware.
+//
+// The middleware call order is determined by the
+// order of middleware registraion in each area
+// ('before' or 'after').
 func (k *Ken) RegisterMiddlewares(mws ...interface{}) (err error) {
 	for _, mw := range mws {
 		if err = k.registerMiddleware(mw); err != nil {
@@ -96,6 +136,9 @@ func (k *Ken) RegisterMiddlewares(mws ...interface{}) (err error) {
 	return
 }
 
+// Unregister should be called to cleanly unregister
+// all registered slash commands from the discord
+// backend.
 func (k *Ken) Unregister() (err error) {
 	self, err := k.opt.State.SelfUser(k.s)
 	if err != nil {
@@ -180,12 +223,13 @@ func (k *Ken) onInteractionCreate(s *discordgo.Session, e *discordgo.Interaction
 		}
 	}
 
-	if err := cmd.Run(ctx); err != nil {
+	err := cmd.Run(ctx)
+	if err != nil {
 		k.opt.OnCommandError(err, ctx)
 	}
 
 	for _, mw := range k.mwAfter {
-		err := mw.After(ctx)
+		err := mw.After(ctx, err)
 		if err != nil {
 			k.opt.OnCommandError(err, ctx)
 		}
