@@ -5,13 +5,20 @@ import "github.com/bwmarrin/discordgo"
 type FollowUpMessage struct {
 	*discordgo.Message
 
-	self string
+	Error error
+
+	self *discordgo.User
 	s    *discordgo.Session
 	i    *discordgo.Interaction
 }
 
 func (m *FollowUpMessage) Edit(data *discordgo.WebhookEdit) (err error) {
-	inter, err := m.s.FollowupMessageEdit(m.self, m.i, m.ID, data)
+	if m.Error != nil {
+		err = m.Error
+		return
+	}
+
+	inter, err := m.s.FollowupMessageEdit(m.self.ID, m.i, m.ID, data)
 	if err != nil {
 		return
 	}
@@ -22,6 +29,11 @@ func (m *FollowUpMessage) Edit(data *discordgo.WebhookEdit) (err error) {
 }
 
 func (m *FollowUpMessage) Delete() (err error) {
-	err = m.s.FollowupMessageDelete(m.self, m.i, m.ID)
+	if m.Error != nil {
+		err = m.Error
+		return
+	}
+
+	err = m.s.FollowupMessageDelete(m.self.ID, m.i, m.ID)
 	return
 }

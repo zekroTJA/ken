@@ -21,20 +21,31 @@ func (c *Ctx) Respond(r *discordgo.InteractionResponse) error {
 	return c.Session.InteractionRespond(c.Event.Interaction, r)
 }
 
-func (c *Ctx) FollowUp(wait bool, data *discordgo.WebhookParams) (err error, fum *FollowUpMessage) {
-	self, err := c.st.SelfUser(c.Session)
-	if err != nil {
-		return
-	}
-	msg, err := c.Session.FollowupMessageCreate(self.ID, c.Event.Interaction, wait, data)
-	if err != nil {
-		return
-	}
+func (c *Ctx) FollowUp(wait bool, data *discordgo.WebhookParams) (fum *FollowUpMessage) {
 	fum = &FollowUpMessage{
-		Message: msg,
-		self:    self.ID,
-		s:       c.Session,
-		i:       c.Event.Interaction,
+		s: c.Session,
+		i: c.Event.Interaction,
 	}
+	fum.self, fum.Error = c.st.SelfUser(c.Session)
+	if fum.Error != nil {
+		return
+	}
+	fum.Message, fum.Error = c.Session.FollowupMessageCreate(fum.self.ID, c.Event.Interaction, wait, data)
 	return
+}
+
+func (c *Ctx) FollowUpError(content, title string) (fum *FollowUpMessage) {
+	return c.FollowUp(true, &discordgo.WebhookParams{
+		Embeds: []*discordgo.MessageEmbed{
+			{
+				Description: content,
+				Title:       title,
+				Color:       clrEmbedError,
+			},
+		},
+	})
+}
+
+func (c *Ctx) Channel() (*discordgo.Channel, error) {
+	return c.st.Channel(c.Session, c.Event.ChannelID)
 }

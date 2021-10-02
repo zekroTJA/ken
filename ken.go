@@ -14,30 +14,41 @@ type Ken struct {
 
 	cmdsLock sync.RWMutex
 	cmds     map[string]Command
+	cmdIDs   []string
 	ctxPool  sync.Pool
+
+	mwBefore []MiddlewareBefore
+	mwAfter  []MiddlewareAfter
 }
 
 type Options struct {
-	State   state.State
-	OnError func(area string, err error, args ...interface{})
+	State          state.State
+	OnSystemError  func(context string, err error, args ...interface{})
+	OnCommandError func(err error, ctx *Ctx)
 }
 
 var defaultOptions = Options{
 	State: state.NewInternal(),
-	OnError: func(ctx string, err error, args ...interface{}) {
+	OnSystemError: func(ctx string, err error, args ...interface{}) {
 		log.Printf("[KEN] {%s} - %s\n", ctx, err.Error())
+	},
+	OnCommandError: func(err error, ctx *Ctx) {
+		log.Printf("[KEN] {command error} - %s : %s\n", ctx.Command.Name(), err.Error())
 	},
 }
 
 func New(s *discordgo.Session, options ...Options) (k *Ken) {
 	k = &Ken{
-		s:    s,
-		cmds: make(map[string]Command),
+		s:      s,
+		cmds:   make(map[string]Command),
+		cmdIDs: make([]string, 0),
 		ctxPool: sync.Pool{
 			New: func() interface{} {
 				return newCtx()
 			},
 		},
+		mwBefore: make([]MiddlewareBefore, 0),
+		mwAfter:  make([]MiddlewareAfter, 0),
 	}
 
 	k.opt = &defaultOptions
@@ -46,8 +57,11 @@ func New(s *discordgo.Session, options ...Options) (k *Ken) {
 		if o.State != nil {
 			k.opt.State = o.State
 		}
-		if o.OnError != nil {
-			k.opt.OnError = o.OnError
+		if o.OnSystemError != nil {
+			k.opt.OnSystemError = o.OnSystemError
+		}
+		if o.OnCommandError != nil {
+			k.opt.OnCommandError = o.OnCommandError
 		}
 	}
 
@@ -72,10 +86,26 @@ func (k *Ken) RegisterCommands(cmds ...Command) (err error) {
 	return
 }
 
-func (k *Ken) RegisterMiddlewares(mws ...Middleware) {
+func (k *Ken) RegisterMiddlewares(mws ...interface{}) (err error) {
 	for _, mw := range mws {
-		k.registerMiddleware(mw)
+		if err = k.registerMiddleware(mw); err != nil {
+			break
+		}
 	}
+	return
+}
+
+func (k *Ken) Unregister() (err error) {
+	self, err := k.opt.State.SelfUser(k.s)
+	if err != nil {
+		return
+	}
+	for _, id := range k.cmdIDs {
+		if err = k.s.ApplicationCommandDelete(self.ID, "", id); err != nil {
+			k.opt.OnSystemError("command unregister", err)
+		}
+	}
+	return
 }
 
 func (k *Ken) registerCommand(cmd Command) (err error) {
@@ -93,8 +123,18 @@ func (k *Ken) registerCommand(cmd Command) (err error) {
 	return
 }
 
-func (k *Ken) registerMiddleware(mw Middleware) {
-
+func (k *Ken) registerMiddleware(mw interface{}) (err error) {
+	var okBefore, okAfter bool
+	if mwBefore, okBefore := mw.(MiddlewareBefore); okBefore {
+		k.mwBefore = append(k.mwBefore, mwBefore)
+	}
+	if mwAfter, okAfter := mw.(MiddlewareAfter); okAfter {
+		k.mwAfter = append(k.mwAfter, mwAfter)
+	}
+	if !okBefore && !okAfter {
+		err = ErrInvalidMiddleware
+	}
+	return
 }
 
 func (k *Ken) onReady(s *discordgo.Session, e *discordgo.Ready) {
@@ -102,8 +142,11 @@ func (k *Ken) onReady(s *discordgo.Session, e *discordgo.Ready) {
 	defer k.cmdsLock.RUnlock()
 
 	for _, cmd := range k.cmds {
-		if _, err := s.ApplicationCommandCreate(e.User.ID, "", toApplicationCommand(cmd)); err != nil {
-			k.opt.OnError("command registration", err)
+		ccmd, err := s.ApplicationCommandCreate(e.User.ID, "", toApplicationCommand(cmd))
+		if err != nil {
+			k.opt.OnSystemError("command registration", err)
+		} else {
+			k.cmdIDs = append(k.cmdIDs, ccmd.ID)
 		}
 	}
 }
@@ -124,7 +167,24 @@ func (k *Ken) onInteractionCreate(s *discordgo.Session, e *discordgo.Interaction
 	ctx.Event = e
 	ctx.Command = cmd
 
+	for _, mw := range k.mwBefore {
+		next, err := mw.Before(ctx)
+		if err != nil {
+			k.opt.OnCommandError(err, ctx)
+		}
+		if !next {
+			return
+		}
+	}
+
 	if err := cmd.Run(ctx); err != nil {
-		k.opt.OnError("command error", err, ctx)
+		k.opt.OnCommandError(err, ctx)
+	}
+
+	for _, mw := range k.mwAfter {
+		err := mw.After(ctx)
+		if err != nil {
+			k.opt.OnCommandError(err, ctx)
+		}
 	}
 }

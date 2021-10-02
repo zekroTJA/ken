@@ -22,6 +22,8 @@ func main() {
 	k := ken.New(session)
 	k.RegisterCommands(new(commands.TestCommand))
 
+	defer k.Unregister()
+
 	err = session.Open()
 	if err != nil {
 		panic(err)
