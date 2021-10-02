@@ -6,7 +6,10 @@ import (
 )
 
 type Ctx struct {
+	ObjectMap
+
 	st state.State
+	dp ObjectProvider
 
 	Session *discordgo.Session
 	Event   *discordgo.InteractionCreate
@@ -14,7 +17,9 @@ type Ctx struct {
 }
 
 func newCtx() *Ctx {
-	return &Ctx{}
+	return &Ctx{
+		ObjectMap: make(simpleObjectMap),
+	}
 }
 
 func (c *Ctx) Respond(r *discordgo.InteractionResponse) error {
@@ -48,4 +53,11 @@ func (c *Ctx) FollowUpError(content, title string) (fum *FollowUpMessage) {
 
 func (c *Ctx) Channel() (*discordgo.Channel, error) {
 	return c.st.Channel(c.Session, c.Event.ChannelID)
+}
+
+func (c *Ctx) Get(key interface{}) (v interface{}) {
+	if v = c.ObjectMap.Load(key); v == nil && c.dp != nil {
+		v = c.dp.Load(key)
+	}
+	return
 }

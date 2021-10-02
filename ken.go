@@ -22,9 +22,10 @@ type Ken struct {
 }
 
 type Options struct {
-	State          state.State
-	OnSystemError  func(context string, err error, args ...interface{})
-	OnCommandError func(err error, ctx *Ctx)
+	State              state.State
+	DependencyProvider ObjectProvider
+	OnSystemError      func(context string, err error, args ...interface{})
+	OnCommandError     func(err error, ctx *Ctx)
 }
 
 var defaultOptions = Options{
@@ -162,7 +163,9 @@ func (k *Ken) onInteractionCreate(s *discordgo.Session, e *discordgo.Interaction
 
 	ctx := k.ctxPool.Get().(*Ctx)
 	defer k.ctxPool.Put(ctx)
+	ctx.Purge()
 	ctx.st = k.opt.State
+	ctx.dp = k.opt.DependencyProvider
 	ctx.Session = s
 	ctx.Event = e
 	ctx.Command = cmd
