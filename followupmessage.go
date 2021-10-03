@@ -1,6 +1,10 @@
 package ken
 
-import "github.com/bwmarrin/discordgo"
+import (
+	"time"
+
+	"github.com/bwmarrin/discordgo"
+)
 
 type FollowUpMessage struct {
 	*discordgo.Message
@@ -36,4 +40,12 @@ func (m *FollowUpMessage) Delete() (err error) {
 
 	err = m.s.FollowupMessageDelete(m.self.ID, m.i, m.ID)
 	return
+}
+
+func (m *FollowUpMessage) DeleteAfter(d time.Duration) *FollowUpMessage {
+	go func() {
+		time.Sleep(d)
+		m.Delete()
+	}()
+	return m
 }
