@@ -58,8 +58,8 @@ func (c *Ctx) FollowUpError(content, title string) (fum *FollowUpMessage) {
 }
 
 func (c *Ctx) Get(key string) (v interface{}) {
-	if v = c.ObjectMap.Load(key); v == nil && c.dp != nil {
-		v = c.dp.Load(key)
+	if v = c.ObjectMap.Get(key); v == nil && c.dp != nil {
+		v = c.dp.Get(key)
 	}
 	return
 }

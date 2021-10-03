@@ -1,11 +1,11 @@
 package ken
 
 type ObjectProvider interface {
-	Load(key string) interface{}
+	Get(key string) interface{}
 }
 
 type ObjectInjector interface {
-	Store(key string, obj interface{})
+	Set(key string, obj interface{})
 }
 
 type ObjectMap interface {
@@ -19,11 +19,11 @@ type simpleObjectMap map[string]interface{}
 
 var _ ObjectMap = (simpleObjectMap)(nil)
 
-func (m simpleObjectMap) Load(key string) interface{} {
+func (m simpleObjectMap) Get(key string) interface{} {
 	return m[key]
 }
 
-func (m simpleObjectMap) Store(key string, obj interface{}) {
+func (m simpleObjectMap) Set(key string, obj interface{}) {
 	m[key] = obj
 }
 
