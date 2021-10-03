@@ -57,13 +57,17 @@ func (c *Ctx) FollowUpError(content, title string) (fum *FollowUpMessage) {
 	})
 }
 
-func (c *Ctx) Channel() (*discordgo.Channel, error) {
-	return c.st.Channel(c.Session, c.Event.ChannelID)
-}
-
 func (c *Ctx) Get(key string) (v interface{}) {
 	if v = c.ObjectMap.Load(key); v == nil && c.dp != nil {
 		v = c.dp.Load(key)
 	}
 	return
+}
+
+func (c *Ctx) Channel() (*discordgo.Channel, error) {
+	return c.st.Channel(c.Session, c.Event.ChannelID)
+}
+
+func (c *Ctx) Guild() (*discordgo.Guild, error) {
+	return c.st.Guild(c.Session, c.Event.GuildID)
 }
