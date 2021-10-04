@@ -2,7 +2,6 @@ package ken
 
 import (
 	"github.com/bwmarrin/discordgo"
-	"github.com/zekrotja/ken/state"
 )
 
 // Ctx holds the invokation context of
@@ -10,8 +9,7 @@ import (
 type Ctx struct {
 	ObjectMap
 
-	st state.State
-	dp ObjectProvider
+	k *Ken
 
 	// Session holds the discordgo session instance.
 	Session *discordgo.Session
@@ -37,7 +35,7 @@ func (c *Ctx) FollowUp(wait bool, data *discordgo.WebhookParams) (fum *FollowUpM
 		s: c.Session,
 		i: c.Event.Interaction,
 	}
-	fum.self, fum.Error = c.st.SelfUser(c.Session)
+	fum.self, fum.Error = c.k.opt.State.SelfUser(c.Session)
 	if fum.Error != nil {
 		return
 	}
@@ -46,6 +44,9 @@ func (c *Ctx) FollowUp(wait bool, data *discordgo.WebhookParams) (fum *FollowUpM
 }
 
 func (c *Ctx) FollowUpEmbed(emb *discordgo.MessageEmbed) (fum *FollowUpMessage) {
+	if emb.Color <= 0 {
+		emb.Color = c.k.opt.EmbedColors.Default
+	}
 	return c.FollowUp(true, &discordgo.WebhookParams{
 		Embeds: []*discordgo.MessageEmbed{
 			emb,
@@ -57,7 +58,7 @@ func (c *Ctx) FollowUpError(content, title string) (fum *FollowUpMessage) {
 	return c.FollowUpEmbed(&discordgo.MessageEmbed{
 		Description: content,
 		Title:       title,
-		Color:       clrEmbedError,
+		Color:       c.k.opt.EmbedColors.Error,
 	})
 }
 
@@ -68,18 +69,18 @@ func (c *Ctx) Defer() (err error) {
 }
 
 func (c *Ctx) Get(key string) (v interface{}) {
-	if v = c.ObjectMap.Get(key); v == nil && c.dp != nil {
-		v = c.dp.Get(key)
+	if v = c.ObjectMap.Get(key); v == nil && c.k.opt.DependencyProvider != nil {
+		v = c.k.opt.DependencyProvider.Get(key)
 	}
 	return
 }
 
 func (c *Ctx) Channel() (*discordgo.Channel, error) {
-	return c.st.Channel(c.Session, c.Event.ChannelID)
+	return c.k.opt.State.Channel(c.Session, c.Event.ChannelID)
 }
 
 func (c *Ctx) Guild() (*discordgo.Guild, error) {
-	return c.st.Guild(c.Session, c.Event.GuildID)
+	return c.k.opt.State.Guild(c.Session, c.Event.GuildID)
 }
 
 func (c *Ctx) User() (u *discordgo.User) {

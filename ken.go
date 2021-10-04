@@ -11,6 +11,15 @@ import (
 	"github.com/zekrotja/ken/state"
 )
 
+// EmbedColors lets you define custom colors for embeds.
+type EmbedColors struct {
+	// Default defines the default embed color used when
+	// no other color is specified.
+	Default int
+	// Error specifies the embed color of error embeds.
+	Error int
+}
+
 // Options holds configurations for Ken.
 type Options struct {
 	// State specifies the state manager to be used.
@@ -21,6 +30,8 @@ type Options struct {
 	// to be used in a commands or middlewares Ctx by
 	// a string key.
 	DependencyProvider ObjectProvider
+	// EmbedColors lets you define custom colors for embeds.
+	EmbedColors EmbedColors
 	// OnSystemError is called when a recoverable
 	// system error occurs inside Ken's lifecycle.
 	OnSystemError func(context string, err error, args ...interface{})
@@ -46,6 +57,10 @@ type Ken struct {
 
 var defaultOptions = Options{
 	State: state.NewInternal(),
+	EmbedColors: EmbedColors{
+		Default: 0xFDD835,
+		Error:   0xF44336,
+	},
 	OnSystemError: func(ctx string, err error, args ...interface{}) {
 		log.Printf("[KEN] {%s} - %s\n", ctx, err.Error())
 	},
@@ -77,6 +92,9 @@ func New(s *discordgo.Session, options ...Options) (k *Ken) {
 	k.opt = &defaultOptions
 	if len(options) > 0 {
 		o := options[0]
+
+		k.opt.DependencyProvider = o.DependencyProvider
+
 		if o.State != nil {
 			k.opt.State = o.State
 		}
@@ -86,7 +104,12 @@ func New(s *discordgo.Session, options ...Options) (k *Ken) {
 		if o.OnCommandError != nil {
 			k.opt.OnCommandError = o.OnCommandError
 		}
-		k.opt.DependencyProvider = o.DependencyProvider
+		if o.EmbedColors.Default > 0 {
+			k.opt.EmbedColors.Default = o.EmbedColors.Default
+		}
+		if o.EmbedColors.Error > 0 {
+			k.opt.EmbedColors.Error = o.EmbedColors.Error
+		}
 	}
 
 	k.s.AddHandler(k.onReady)
@@ -212,8 +235,7 @@ func (k *Ken) onInteractionCreate(s *discordgo.Session, e *discordgo.Interaction
 	ctx := k.ctxPool.Get().(*Ctx)
 	defer k.ctxPool.Put(ctx)
 	ctx.Purge()
-	ctx.st = k.opt.State
-	ctx.dp = k.opt.DependencyProvider
+	ctx.k = k
 	ctx.Session = s
 	ctx.Event = e
 	ctx.Command = cmd
