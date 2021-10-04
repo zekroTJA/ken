@@ -86,6 +86,7 @@ func New(s *discordgo.Session, options ...Options) (k *Ken) {
 		if o.OnCommandError != nil {
 			k.opt.OnCommandError = o.OnCommandError
 		}
+		k.opt.DependencyProvider = o.DependencyProvider
 	}
 
 	k.s.AddHandler(k.onReady)
