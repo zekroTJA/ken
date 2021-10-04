@@ -18,7 +18,7 @@ func (c *TestCommand) Description() string {
 }
 
 func (c *TestCommand) Version() string {
-	return "1"
+	return "1.0.0"
 }
 
 func (c *TestCommand) Type() discordgo.ApplicationCommandType {
