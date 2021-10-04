@@ -4,7 +4,6 @@
 package ken
 
 import (
-	"fmt"
 	"log"
 	"sync"
 
@@ -234,7 +233,6 @@ func (k *Ken) onInteractionCreate(s *discordgo.Session, e *discordgo.Interaction
 	}
 
 	ch, err := k.opt.State.Channel(s, e.ChannelID)
-	fmt.Println(ch, err)
 	if err != nil {
 		k.opt.OnSystemError("state error", err)
 		return
