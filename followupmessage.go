@@ -12,7 +12,7 @@ type FollowUpMessage struct {
 	*discordgo.Message
 
 	// Error contains the error instance of
-	// error occurences during method execution.
+	// error occurrences during method execution.
 	Error error
 
 	self *discordgo.User

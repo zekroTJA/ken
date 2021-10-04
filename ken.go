@@ -149,7 +149,7 @@ func (k *Ken) RegisterCommands(cmds ...Command) (err error) {
 // interfaces in the same middleware.
 //
 // The middleware call order is determined by the
-// order of middleware registraion in each area
+// order of middleware registration in each area
 // ('before' or 'after').
 func (k *Ken) RegisterMiddlewares(mws ...interface{}) (err error) {
 	for _, mw := range mws {

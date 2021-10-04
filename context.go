@@ -35,7 +35,7 @@ func (c *Ctx) Respond(r *discordgo.InteractionResponse) error {
 // FollowUp creates a follow up message to the
 // interaction event and returns a FollowUpMessage
 // object containing the created message as well as
-// an error instance, if an error occured.
+// an error instance, if an error occurred.
 //
 // This way it allows to be chained in one call with
 // subsequent FollowUpMessage method calls.

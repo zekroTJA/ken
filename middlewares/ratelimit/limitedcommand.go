@@ -6,7 +6,7 @@ import "time"
 // rate limitable command.
 type LimitedCommand interface {
 
-	// GetLimiterBurst returns the maximum ammount
+	// GetLimiterBurst returns the maximum amount
 	// of tokens which can be available at a time.
 	LimiterBurst() int
 
