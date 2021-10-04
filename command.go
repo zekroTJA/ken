@@ -26,6 +26,14 @@ type Command interface {
 	Run(ctx *Ctx) (err error)
 }
 
+// DmCapable extends a command to specify if it is
+// able to be executed in DMs or not.
+type DmCapable interface {
+	// IsDmCapable returns true if the command can
+	// be used in DMs.
+	IsDmCapable() bool
+}
+
 func toApplicationCommand(c Command) *discordgo.ApplicationCommand {
 	return &discordgo.ApplicationCommand{
 		Name:        c.Name(),

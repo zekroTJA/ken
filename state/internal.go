@@ -19,7 +19,7 @@ func (*Internal) SelfUser(s *discordgo.Session) (u *discordgo.User, err error) {
 }
 
 func (*Internal) Channel(s *discordgo.Session, id string) (c *discordgo.Channel, err error) {
-	if c, err = s.State.Channel(id); err != nil {
+	if c, err = s.State.Channel(id); err != nil && err != discordgo.ErrStateNotFound {
 		return
 	}
 	if c == nil {
@@ -29,7 +29,7 @@ func (*Internal) Channel(s *discordgo.Session, id string) (c *discordgo.Channel,
 }
 
 func (*Internal) Guild(s *discordgo.Session, id string) (g *discordgo.Guild, err error) {
-	if g, err = s.State.Guild(id); err != nil {
+	if g, err = s.State.Guild(id); err != nil && err != discordgo.ErrStateNotFound {
 		return
 	}
 	if g == nil {

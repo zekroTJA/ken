@@ -4,6 +4,7 @@
 package ken
 
 import (
+	"fmt"
 	"log"
 	"sync"
 
@@ -232,6 +233,13 @@ func (k *Ken) onInteractionCreate(s *discordgo.Session, e *discordgo.Interaction
 		return
 	}
 
+	ch, err := k.opt.State.Channel(s, e.ChannelID)
+	fmt.Println(ch, err)
+	if err != nil {
+		k.opt.OnSystemError("state error", err)
+		return
+	}
+
 	ctx := k.ctxPool.Get().(*Ctx)
 	defer k.ctxPool.Put(ctx)
 	ctx.Purge()
@@ -239,6 +247,13 @@ func (k *Ken) onInteractionCreate(s *discordgo.Session, e *discordgo.Interaction
 	ctx.Session = s
 	ctx.Event = e
 	ctx.Command = cmd
+
+	if ch.Type == discordgo.ChannelTypeDM || ch.Type == discordgo.ChannelTypeGroupDM {
+		if dmCmd, ok := cmd.(DmCapable); !ok || !dmCmd.IsDmCapable() {
+			k.opt.OnCommandError(ErrNotDMCapable, ctx)
+			return
+		}
+	}
 
 	for _, mw := range k.mwBefore {
 		next, err := mw.Before(ctx)
@@ -250,7 +265,7 @@ func (k *Ken) onInteractionCreate(s *discordgo.Session, e *discordgo.Interaction
 		}
 	}
 
-	err := cmd.Run(ctx)
+	err = cmd.Run(ctx)
 	if err != nil {
 		k.opt.OnCommandError(err, ctx)
 	}

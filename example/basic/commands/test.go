@@ -36,6 +36,10 @@ func (c *TestCommand) Options() []*discordgo.ApplicationCommandOption {
 	}
 }
 
+func (c *TestCommand) IsDmCapable() bool {
+	return true
+}
+
 func (c *TestCommand) Run(ctx *ken.Ctx) (err error) {
 	val := ctx.Event.ApplicationCommandData().Options[0].Value.(bool)
 
