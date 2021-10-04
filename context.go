@@ -45,15 +45,19 @@ func (c *Ctx) FollowUp(wait bool, data *discordgo.WebhookParams) (fum *FollowUpM
 	return
 }
 
-func (c *Ctx) FollowUpError(content, title string) (fum *FollowUpMessage) {
+func (c *Ctx) FollowUpEmbed(emb *discordgo.MessageEmbed) (fum *FollowUpMessage) {
 	return c.FollowUp(true, &discordgo.WebhookParams{
 		Embeds: []*discordgo.MessageEmbed{
-			{
-				Description: content,
-				Title:       title,
-				Color:       clrEmbedError,
-			},
+			emb,
 		},
+	})
+}
+
+func (c *Ctx) FollowUpError(content, title string) (fum *FollowUpMessage) {
+	return c.FollowUpEmbed(&discordgo.MessageEmbed{
+		Description: content,
+		Title:       title,
+		Color:       clrEmbedError,
 	})
 }
 
