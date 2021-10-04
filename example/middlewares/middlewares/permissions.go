@@ -7,6 +7,13 @@ import (
 	"github.com/zekrotja/ken"
 )
 
+/////////////////////////////////////////
+//           ~ DISCLAIMER ~
+// THIS IS NOT A PROPER WAY TO IMPLEMENT
+// COMMAND SECURITY. THIS IS JUST FOR
+// DEMONSTRATION PURPOSES!
+/////////////////////////////////////////
+
 type RequiresRoleCommand interface {
 	RequiresRole() string
 }
