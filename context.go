@@ -61,6 +61,12 @@ func (c *Ctx) FollowUpError(content, title string) (fum *FollowUpMessage) {
 	})
 }
 
+func (c *Ctx) Defer() (err error) {
+	return c.Respond(&discordgo.InteractionResponse{
+		Type: discordgo.InteractionResponseDeferredChannelMessageWithSource,
+	})
+}
+
 func (c *Ctx) Get(key string) (v interface{}) {
 	if v = c.ObjectMap.Get(key); v == nil && c.dp != nil {
 		v = c.dp.Get(key)
