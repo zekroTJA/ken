@@ -71,3 +71,11 @@ func (c *Ctx) Channel() (*discordgo.Channel, error) {
 func (c *Ctx) Guild() (*discordgo.Guild, error) {
 	return c.st.Guild(c.Session, c.Event.GuildID)
 }
+
+func (c *Ctx) User() (u *discordgo.User) {
+	u = c.Event.User
+	if u == nil && c.Event.Member != nil {
+		u = c.Event.Member.User
+	}
+	return
+}

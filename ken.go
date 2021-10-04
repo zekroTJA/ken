@@ -168,11 +168,15 @@ func (k *Ken) registerCommand(cmd Command) (err error) {
 }
 
 func (k *Ken) registerMiddleware(mw interface{}) (err error) {
-	var okBefore, okAfter bool
-	if mwBefore, okBefore := mw.(MiddlewareBefore); okBefore {
+	var (
+		okBefore, okAfter bool
+		mwBefore          MiddlewareBefore
+		mwAfter           MiddlewareAfter
+	)
+	if mwBefore, okBefore = mw.(MiddlewareBefore); okBefore {
 		k.mwBefore = append(k.mwBefore, mwBefore)
 	}
-	if mwAfter, okAfter := mw.(MiddlewareAfter); okAfter {
+	if mwAfter, okAfter = mw.(MiddlewareAfter); okAfter {
 		k.mwAfter = append(k.mwAfter, mwAfter)
 	}
 	if !okBefore && !okAfter {
