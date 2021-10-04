@@ -6,9 +6,13 @@ import (
 	"github.com/bwmarrin/discordgo"
 )
 
+// FollowUpMessage wraps an interaction follow
+// up message and collected errors.
 type FollowUpMessage struct {
 	*discordgo.Message
 
+	// Error contains the error instance of
+	// error occurences during method execution.
 	Error error
 
 	self *discordgo.User
@@ -16,6 +20,8 @@ type FollowUpMessage struct {
 	i    *discordgo.Interaction
 }
 
+// Edit overwrites the given follow up message with the
+// data specified.
 func (m *FollowUpMessage) Edit(data *discordgo.WebhookEdit) (err error) {
 	if m.Error != nil {
 		err = m.Error
@@ -32,6 +38,7 @@ func (m *FollowUpMessage) Edit(data *discordgo.WebhookEdit) (err error) {
 	return
 }
 
+// Delete removes the follow up message.
 func (m *FollowUpMessage) Delete() (err error) {
 	if m.Error != nil {
 		err = m.Error
@@ -42,6 +49,8 @@ func (m *FollowUpMessage) Delete() (err error) {
 	return
 }
 
+// DeleteAfter queues a deletion of the follow up
+// message after the specified duration.
 func (m *FollowUpMessage) DeleteAfter(d time.Duration) *FollowUpMessage {
 	go func() {
 		time.Sleep(d)
