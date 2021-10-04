@@ -60,8 +60,8 @@ func main() {
 
 	k := ken.New(session)
 	k.RegisterCommands(
-        new(commands.TestCommand),
-    )
+		new(commands.TestCommand),
+	)
 
 	defer k.Unregister()
 
