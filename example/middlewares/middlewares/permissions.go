@@ -1,9 +1,15 @@
-package middleware
+package middlewares
 
 import (
+	"fmt"
+
 	"github.com/bwmarrin/discordgo"
 	"github.com/zekrotja/ken"
 )
+
+type RequiresRoleCommand interface {
+	RequiresRole() string
+}
 
 type PermissionsMiddleware struct {
 	count int
@@ -14,6 +20,12 @@ var (
 )
 
 func (c *PermissionsMiddleware) Before(ctx *ken.Ctx) (next bool, err error) {
+	cmd, ok := ctx.Command.(RequiresRoleCommand)
+	if !ok {
+		next = true
+		return
+	}
+
 	guildRoles, err := ctx.Session.GuildRoles(ctx.Event.GuildID)
 	if err != nil {
 		return
@@ -22,7 +34,7 @@ func (c *PermissionsMiddleware) Before(ctx *ken.Ctx) (next bool, err error) {
 roleLoop:
 	for _, rid := range ctx.Event.Member.Roles {
 		for _, r := range guildRoles {
-			if rid == r.ID && r.Name == "Admin" {
+			if rid == r.ID && r.Name == cmd.RequiresRole() {
 				next = true
 				break roleLoop
 			}
@@ -35,8 +47,10 @@ roleLoop:
 			Data: &discordgo.InteractionResponseData{
 				Embeds: []*discordgo.MessageEmbed{
 					{
-						Color:       0xF44336,
-						Description: "You must have the role \"Admim\" to perform this command!",
+						Color: 0xF44336,
+						Description: fmt.Sprintf(
+							"You must have the role \"%s\" to perform this command!",
+							cmd.RequiresRole()),
 					},
 				},
 			},

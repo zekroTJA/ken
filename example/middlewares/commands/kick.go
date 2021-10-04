@@ -5,11 +5,15 @@ import (
 
 	"github.com/bwmarrin/discordgo"
 	"github.com/zekrotja/ken"
+	"github.com/zekrotja/ken/example/middlewares/middlewares"
 )
 
 type KickCommand struct{}
 
-var _ ken.Command = (*KickCommand)(nil)
+var (
+	_ ken.Command                     = (*KickCommand)(nil)
+	_ middlewares.RequiresRoleCommand = (*KickCommand)(nil)
+)
 
 func (c *KickCommand) Name() string {
 	return "kick"
@@ -42,6 +46,10 @@ func (c *KickCommand) Options() []*discordgo.ApplicationCommandOption {
 			Required:    true,
 		},
 	}
+}
+
+func (c *KickCommand) RequiresRole() string {
+	return "Admin"
 }
 
 func (c *KickCommand) Run(ctx *ken.Ctx) (err error) {

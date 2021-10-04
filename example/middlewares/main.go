@@ -7,8 +7,8 @@ import (
 
 	"github.com/bwmarrin/discordgo"
 	"github.com/zekrotja/ken"
-	"github.com/zekrotja/ken/example/middleware/commands"
-	"github.com/zekrotja/ken/example/middleware/middleware"
+	"github.com/zekrotja/ken/example/middlewares/commands"
+	"github.com/zekrotja/ken/example/middlewares/middlewares"
 )
 
 func main() {
@@ -25,7 +25,7 @@ func main() {
 		new(commands.KickCommand),
 	)
 	k.RegisterMiddlewares(
-		new(middleware.PermissionsMiddleware),
+		new(middlewares.PermissionsMiddleware),
 	)
 
 	defer k.Unregister()
