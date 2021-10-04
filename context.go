@@ -9,7 +9,8 @@ import (
 type Ctx struct {
 	ObjectMap
 
-	k *Ken
+	k         *Ken
+	responded bool
 
 	// Session holds the discordgo session instance.
 	Session *discordgo.Session
@@ -28,8 +29,14 @@ func newCtx() *Ctx {
 
 // Respond to an interaction event with the given
 // interaction response payload.
-func (c *Ctx) Respond(r *discordgo.InteractionResponse) error {
-	return c.Session.InteractionRespond(c.Event.Interaction, r)
+func (c *Ctx) Respond(r *discordgo.InteractionResponse) (err error) {
+	// Avoid multiple responses
+	if c.responded {
+		return nil
+	}
+	err = c.Session.InteractionRespond(c.Event.Interaction, r)
+	c.responded = err == nil
+	return
 }
 
 // FollowUp creates a follow up message to the
