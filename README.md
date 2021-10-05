@@ -2,7 +2,10 @@
 
 # ken &nbsp; [![](https://img.shields.io/badge/docs-pkg.do.dev-blue?logo=go&logoColor=white)](https://pkg.go.dev/github.com/zekrotja/ken?tab=doc) [![Go Report Card](https://goreportcard.com/badge/github.com/zekrotja/ken)](https://goreportcard.com/report/github.com/zekrotja/ken)
 
-剣 *(`ken` - japanese for `Sword`)* - A cutting edge *(haha)*, prototype, object-oriented and highly modular slash command handler for discordgo.
+> ⚠️ **Attention**  
+> This package is still in a very early state of development and the API might get breaking changes until first official release.
+
+剣 *(`ken` - japanese for `Sword`)* - A cutting edge *(haha)*, prototype, object-oriented and highly modular slash command handler for [Discordgo](https://github.com/bwmarrin/discordgo).
 
 This work-in-progress slash command handler is designed to be used in future versions of [shinpuru](https://github.com/zekroTJA/shinpuru).
 
