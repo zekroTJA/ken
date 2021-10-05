@@ -9,7 +9,14 @@ import (
 	"github.com/zekrotja/ken"
 	"github.com/zekrotja/ken/examples/middlewares/commands"
 	"github.com/zekrotja/ken/examples/middlewares/middlewares"
+	"github.com/zekrotja/ken/store"
 )
+
+func must(err error) {
+	if err != nil {
+		panic(err)
+	}
+}
 
 func main() {
 	token := os.Getenv("TOKEN")
@@ -20,20 +27,22 @@ func main() {
 	}
 	defer session.Close()
 
-	k := ken.New(session)
-	k.RegisterCommands(
+	k, err := ken.New(session, ken.Options{
+		CommandStore: store.NewDefault(),
+	})
+	must(err)
+
+	must(k.RegisterCommands(
 		new(commands.KickCommand),
-	)
-	k.RegisterMiddlewares(
+	))
+
+	must(k.RegisterMiddlewares(
 		new(middlewares.PermissionsMiddleware),
-	)
+	))
 
 	defer k.Unregister()
 
-	err = session.Open()
-	if err != nil {
-		panic(err)
-	}
+	must(session.Open())
 
 	sc := make(chan os.Signal, 1)
 	signal.Notify(sc, syscall.SIGINT, syscall.SIGTERM, os.Interrupt, os.Kill)

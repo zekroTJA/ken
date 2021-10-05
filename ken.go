@@ -9,6 +9,7 @@ import (
 
 	"github.com/bwmarrin/discordgo"
 	"github.com/zekrotja/ken/state"
+	"github.com/zekrotja/ken/store"
 )
 
 // EmbedColors lets you define custom colors for embeds.
@@ -26,6 +27,9 @@ type Options struct {
 	// When not specified, the default discordgo state
 	// manager is used.
 	State state.State
+	// CommandStore specifies a storage instance to
+	// cache created commands.
+	CommandStore store.CommandStore
 	// DependencyProvider can be used to inject dependencies
 	// to be used in a commands or middlewares Ctx by
 	// a string key.
@@ -48,7 +52,7 @@ type Ken struct {
 
 	cmdsLock sync.RWMutex
 	cmds     map[string]Command
-	cmdIDs   []string
+	idcache  map[string]string
 	ctxPool  sync.Pool
 
 	mwBefore []MiddlewareBefore
@@ -75,11 +79,11 @@ var defaultOptions = Options{
 //
 // If no options are passed, default parameters
 // will be applied.
-func New(s *discordgo.Session, options ...Options) (k *Ken) {
+func New(s *discordgo.Session, options ...Options) (k *Ken, err error) {
 	k = &Ken{
-		s:      s,
-		cmds:   make(map[string]Command),
-		cmdIDs: make([]string, 0),
+		s:       s,
+		cmds:    make(map[string]Command),
+		idcache: make(map[string]string),
 		ctxPool: sync.Pool{
 			New: func() interface{} {
 				return newCtx()
@@ -98,6 +102,9 @@ func New(s *discordgo.Session, options ...Options) (k *Ken) {
 		if o.State != nil {
 			k.opt.State = o.State
 		}
+		if o.CommandStore != nil {
+			k.opt.CommandStore = o.CommandStore
+		}
 		if o.OnSystemError != nil {
 			k.opt.OnSystemError = o.OnSystemError
 		}
@@ -109,6 +116,13 @@ func New(s *discordgo.Session, options ...Options) (k *Ken) {
 		}
 		if o.EmbedColors.Error > 0 {
 			k.opt.EmbedColors.Error = o.EmbedColors.Error
+		}
+	}
+
+	if k.opt.CommandStore != nil {
+		k.idcache, err = k.opt.CommandStore.Load()
+		if err != nil {
+			return
 		}
 	}
 
@@ -163,12 +177,19 @@ func (k *Ken) RegisterMiddlewares(mws ...interface{}) (err error) {
 // Unregister should be called to cleanly unregister
 // all registered slash commands from the discord
 // backend.
+//
+// This can be skipped if you are using
+// a CommandStore.
 func (k *Ken) Unregister() (err error) {
+	if len(k.idcache) == 0 {
+		return
+	}
+
 	self, err := k.opt.State.SelfUser(k.s)
 	if err != nil {
 		return
 	}
-	for _, id := range k.cmdIDs {
+	for _, id := range k.idcache {
 		if err = k.s.ApplicationCommandDelete(self.ID, "", id); err != nil {
 			k.opt.OnSystemError("command unregister", err)
 		}
@@ -213,12 +234,46 @@ func (k *Ken) onReady(s *discordgo.Session, e *discordgo.Ready) {
 	k.cmdsLock.RLock()
 	defer k.cmdsLock.RUnlock()
 
-	for _, cmd := range k.cmds {
-		ccmd, err := s.ApplicationCommandCreate(e.User.ID, "", toApplicationCommand(cmd))
-		if err != nil {
-			k.opt.OnSystemError("command registration", err)
+	var (
+		ccmd   *discordgo.ApplicationCommand
+		err    error
+		update = []*discordgo.ApplicationCommand{}
+	)
+
+	for name, cmd := range k.cmds {
+		if _, ok := k.idcache[name]; ok {
+			acmd := toApplicationCommand(cmd)
+			update = append(update, acmd)
 		} else {
-			k.cmdIDs = append(k.cmdIDs, ccmd.ID)
+			ccmd, err = s.ApplicationCommandCreate(e.User.ID, "", toApplicationCommand(cmd))
+			if err != nil {
+				k.opt.OnSystemError("command registration", err)
+			} else {
+				k.idcache[name] = ccmd.ID
+			}
+		}
+	}
+
+	if len(update) > 0 {
+		_, err = s.ApplicationCommandBulkOverwrite(e.User.ID, "", update)
+		if err != nil {
+			k.opt.OnSystemError("command update", err)
+		}
+	}
+
+	for name, id := range k.idcache {
+		if _, ok := k.cmds[name]; !ok {
+			err = s.ApplicationCommandDelete(e.User.ID, "", id)
+			if err != nil {
+				k.opt.OnSystemError("command delete", err)
+			}
+		}
+	}
+
+	if k.opt.CommandStore != nil {
+		err = k.opt.CommandStore.Store(k.idcache)
+		if err != nil {
+			k.opt.OnSystemError("idcache storage", err)
 		}
 	}
 }
