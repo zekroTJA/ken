@@ -6,7 +6,7 @@
 
 This work-in-progress slash command handler is designed to be used in future versions of [shinpuru](https://github.com/zekroTJA/shinpuru).
 
-If you are interested how to use this package, see the [basic example](examples/basic). In [this]([basic example](examples/middlewares)) example, you can see how to use middlewares.
+If you are interested how to use this package, see the [basic example](examples/basic). In [this](examples/middlewares) example, you can see how to use middlewares.
 
 ## Example Usage
 
