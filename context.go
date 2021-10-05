@@ -126,3 +126,9 @@ func (c *Ctx) User() (u *discordgo.User) {
 	}
 	return
 }
+
+// Options returns the application command data options
+// with additional functionality methods.
+func (c *Ctx) Options() CommandOptions {
+	return c.Event.ApplicationCommandData().Options
+}
