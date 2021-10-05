@@ -1,0 +1,28 @@
+name: Check Examples
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - "*"
+    paths-ignore:
+      - "**.md"
+
+jobs:
+  check-examples:
+    name: Check Examples
+    runs-on: ubuntu-latest
+    steps:
+
+      - name: Setup Golang
+        uses: actions/setup-go@v2
+
+      - name: Checkout Code
+        uses: actions/checkout@v2
+
+      - name: Download Dependencies
+        run: go mod download
+
+      - name: Compile Examples
+        run: |
+          go build -v examples/basic/main.go
+          go build -v examples/middlewares/main.go
