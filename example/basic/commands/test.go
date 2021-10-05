@@ -41,7 +41,7 @@ func (c *TestCommand) IsDmCapable() bool {
 }
 
 func (c *TestCommand) Run(ctx *ken.Ctx) (err error) {
-	val := ctx.Event.ApplicationCommandData().Options[0].Value.(bool)
+	val := ctx.Options().GetByName("pog").BoolValue()
 
 	msg := "not poggers"
 	if val {
