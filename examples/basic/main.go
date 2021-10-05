@@ -7,7 +7,7 @@ import (
 
 	"github.com/bwmarrin/discordgo"
 	"github.com/zekrotja/ken"
-	"github.com/zekrotja/ken/example/basic/commands"
+	"github.com/zekrotja/ken/examples/basic/commands"
 )
 
 func main() {

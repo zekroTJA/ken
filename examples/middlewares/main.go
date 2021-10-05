@@ -7,8 +7,8 @@ import (
 
 	"github.com/bwmarrin/discordgo"
 	"github.com/zekrotja/ken"
-	"github.com/zekrotja/ken/example/middlewares/commands"
-	"github.com/zekrotja/ken/example/middlewares/middlewares"
+	"github.com/zekrotja/ken/examples/middlewares/commands"
+	"github.com/zekrotja/ken/examples/middlewares/middlewares"
 )
 
 func main() {
