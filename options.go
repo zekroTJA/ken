@@ -49,10 +49,15 @@ func (co CommandOptions) GetByName(name string) (opt *CommandOption) {
 	return
 }
 
+// CommandOption wraps a ApplicationCommandInteractionDataOption
+// to provide additional functionalities and method overrides.
 type CommandOption struct {
 	*discordgo.ApplicationCommandInteractionDataOption
 }
 
+// ChannelValue is a utility function for casting option value to channel object.
+//
+// The object is taken from the specified state instance.
 func (o *CommandOption) ChannelValue(ctx *Ctx) *discordgo.Channel {
 	if o.Type != discordgo.ApplicationCommandOptionChannel {
 		panic("ChannelValue called on data option of type " + o.Type.String())
@@ -71,6 +76,9 @@ func (o *CommandOption) ChannelValue(ctx *Ctx) *discordgo.Channel {
 	return ch
 }
 
+// RoleValue is a utility function for casting option value to role object.
+//
+// The object is taken from the specified state instance.
 func (o *CommandOption) RoleValue(ctx *Ctx) *discordgo.Role {
 	if o.Type != discordgo.ApplicationCommandOptionRole {
 		panic("RoleValue called on data option of type " + o.Type.String())
@@ -89,6 +97,9 @@ func (o *CommandOption) RoleValue(ctx *Ctx) *discordgo.Role {
 	return role
 }
 
+// UserValue is a utility function for casting option value to user object.
+//
+// The object is taken from the specified state instance.
 func (o *CommandOption) UserValue(ctx *Ctx) *discordgo.User {
 	if o.Type != discordgo.ApplicationCommandOptionUser {
 		panic("UserValue called on data option of type " + o.Type.String())
