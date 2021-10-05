@@ -57,7 +57,7 @@ func (c *KickCommand) Run(ctx *ken.Ctx) (err error) {
 		return
 	}
 
-	user := ctx.Options().GetByName("member").UserValue(ctx.Session)
+	user := ctx.Options().GetByName("member").UserValue(ctx)
 	reason := ctx.Options().GetByName("reason").StringValue()
 
 	if err = ctx.Session.GuildMemberDeleteWithReason(ctx.Event.GuildID, user.ID, reason); err != nil {

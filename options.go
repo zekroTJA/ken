@@ -10,14 +10,14 @@ type CommandOptions []*discordgo.ApplicationCommandInteractionDataOption
 
 // Get safely returns an options from command options
 // by index.
-func (co CommandOptions) Get(i int) *discordgo.ApplicationCommandInteractionDataOption {
+func (co CommandOptions) Get(i int) *CommandOption {
 	if i < 0 {
 		i = 0
 	}
 	if i >= len(co) {
 		i = len(co) - 1
 	}
-	return co[i]
+	return &CommandOption{co[i]}
 }
 
 // Options returns wrapped underlying options
@@ -30,11 +30,11 @@ func (co CommandOptions) Options(i int) CommandOptions {
 // name does not exist, the returned value for ok is false.
 //
 // This should be used for non-required options.
-func (co CommandOptions) GetByNameOptional(name string) (opt *discordgo.ApplicationCommandInteractionDataOption, ok bool) {
+func (co CommandOptions) GetByNameOptional(name string) (opt *CommandOption, ok bool) {
 	for _, c := range co {
 		if c.Name == name {
 			ok = true
-			opt = c
+			opt = &CommandOption{c}
 			break
 		}
 	}
@@ -44,7 +44,65 @@ func (co CommandOptions) GetByNameOptional(name string) (opt *discordgo.Applicat
 // GetByName returns an option by name.
 //
 // This should only be used on required options.
-func (co CommandOptions) GetByName(name string) (opt *discordgo.ApplicationCommandInteractionDataOption) {
+func (co CommandOptions) GetByName(name string) (opt *CommandOption) {
 	opt, _ = co.GetByNameOptional(name)
 	return
+}
+
+type CommandOption struct {
+	*discordgo.ApplicationCommandInteractionDataOption
+}
+
+func (o *CommandOption) ChannelValue(ctx *Ctx) *discordgo.Channel {
+	if o.Type != discordgo.ApplicationCommandOptionChannel {
+		panic("ChannelValue called on data option of type " + o.Type.String())
+	}
+	chanID := o.Value.(string)
+
+	if ctx == nil {
+		return &discordgo.Channel{ID: chanID}
+	}
+
+	ch, err := ctx.k.opt.State.Channel(ctx.Session, chanID)
+	if err != nil {
+		return &discordgo.Channel{ID: chanID}
+	}
+
+	return ch
+}
+
+func (o *CommandOption) RoleValue(ctx *Ctx) *discordgo.Role {
+	if o.Type != discordgo.ApplicationCommandOptionRole {
+		panic("RoleValue called on data option of type " + o.Type.String())
+	}
+	roleID := o.Value.(string)
+
+	if ctx == nil {
+		return &discordgo.Role{ID: roleID}
+	}
+
+	role, err := ctx.k.opt.State.Role(ctx.Session, ctx.Event.GuildID, roleID)
+	if err != nil {
+		return &discordgo.Role{ID: roleID}
+	}
+
+	return role
+}
+
+func (o *CommandOption) UserValue(ctx *Ctx) *discordgo.User {
+	if o.Type != discordgo.ApplicationCommandOptionUser {
+		panic("UserValue called on data option of type " + o.Type.String())
+	}
+	userID := o.Value.(string)
+
+	if ctx == nil {
+		return &discordgo.User{ID: userID}
+	}
+
+	user, err := ctx.k.opt.State.User(ctx.Session, userID)
+	if err != nil {
+		return &discordgo.User{ID: userID}
+	}
+
+	return user
 }

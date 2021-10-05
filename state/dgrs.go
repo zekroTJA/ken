@@ -32,3 +32,13 @@ func (s *Dgrs) Guild(_ *discordgo.Session, id string) (g *discordgo.Guild, err e
 	g, err = s.st.Guild(id)
 	return
 }
+
+func (s *Dgrs) Role(_ *discordgo.Session, gID, id string) (r *discordgo.Role, err error) {
+	r, err = s.st.Role(gID, id)
+	return
+}
+
+func (s *Dgrs) User(_ *discordgo.Session, id string) (u *discordgo.User, err error) {
+	u, err = s.st.User(id)
+	return
+}

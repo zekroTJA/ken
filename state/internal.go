@@ -37,3 +37,26 @@ func (*Internal) Guild(s *discordgo.Session, id string) (g *discordgo.Guild, err
 	}
 	return
 }
+
+func (*Internal) Role(s *discordgo.Session, gID, id string) (r *discordgo.Role, err error) {
+	if r, err = s.State.Role(gID, id); err != nil && err != discordgo.ErrStateNotFound {
+		return
+	}
+
+	roles, err := s.GuildRoles(gID)
+	if err != nil {
+		return
+	}
+
+	for _, r = range roles {
+		if r.ID == id {
+			return
+		}
+	}
+	return
+}
+
+func (*Internal) User(s *discordgo.Session, id string) (u *discordgo.User, err error) {
+	u, err = s.User(id)
+	return
+}
