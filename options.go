@@ -30,7 +30,7 @@ func (co CommandOptions) Options(i int) CommandOptions {
 // name does not exist, the returned value for ok is false.
 //
 // This should be used for non-required options.
-func (co CommandOptions) GetByNameOptional(name string) (ok bool, opt *discordgo.ApplicationCommandInteractionDataOption) {
+func (co CommandOptions) GetByNameOptional(name string) (opt *discordgo.ApplicationCommandInteractionDataOption, ok bool) {
 	for _, c := range co {
 		if c.Name == name {
 			ok = true
@@ -45,6 +45,6 @@ func (co CommandOptions) GetByNameOptional(name string) (ok bool, opt *discordgo
 //
 // This should only be used on required options.
 func (co CommandOptions) GetByName(name string) (opt *discordgo.ApplicationCommandInteractionDataOption) {
-	_, opt = co.GetByNameOptional(name)
+	opt, _ = co.GetByNameOptional(name)
 	return
 }
