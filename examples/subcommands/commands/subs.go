@@ -70,8 +70,10 @@ func (c *SubsCommand) Run(ctx *ken.Ctx) (err error) {
 		return
 	}
 
-	err = ctx.HandleSubCommand("one", c.one)
-	err = ctx.HandleSubCommand("two", c.two)
+	err = ctx.HandleSubCommands(
+		ken.SubCommandHandler{"one", c.one},
+		ken.SubCommandHandler{"two", c.two},
+	)
 
 	return
 }

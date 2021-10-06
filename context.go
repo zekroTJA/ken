@@ -135,7 +135,10 @@ func (c *Ctx) Options() CommandOptions {
 
 // SubCommandHandler is the handler function used
 // to handle sub command calls.
-type SubCommandHandler func(ctx *SubCommandCtx) error
+type SubCommandHandler struct {
+	Name string
+	Run  func(ctx *SubCommandCtx) error
+}
 
 // SubCommandCtx wraps the current command Ctx and
 // with the called sub command name and scopes the
@@ -153,19 +156,25 @@ func (c *SubCommandCtx) Options() CommandOptions {
 	return c.Ctx.Options().GetByName(c.SubCommandName).Options
 }
 
-// HandleSubCommand checks the options for a sub command
-// call with the given sub command name.
+// HandleSubCommands takes a list of sub command handles.
+// When the command is executed, the options are scanned
+// for the sib command calls by their names. If one of
+// the registered sub commands has been called, the specified
+// handler function is executed.
 //
 // If the call occured, the passed handler function is
-// executed which is getting passed the scoped
-// sub command Ctx.
-func (c *Ctx) HandleSubCommand(name string, handler SubCommandHandler) (err error) {
-	opt := c.Options().Get(0)
-	if opt.Type != discordgo.ApplicationCommandOptionSubCommand || opt.Name != name {
-		return
-	}
+// getting passed the scoped sub command Ctx.
+func (c *Ctx) HandleSubCommands(handler ...SubCommandHandler) (err error) {
+	for _, h := range handler {
+		opt := c.Options().Get(0)
+		if opt.Type != discordgo.ApplicationCommandOptionSubCommand || opt.Name != h.Name {
+			return
+		}
 
-	ctx := &SubCommandCtx{c, name}
-	err = handler(ctx)
+		ctx := &SubCommandCtx{c, h.Name}
+		if err = h.Run(ctx); err != nil {
+			break
+		}
+	}
 	return
 }
