@@ -168,7 +168,7 @@ func (c *Ctx) HandleSubCommands(handler ...SubCommandHandler) (err error) {
 	for _, h := range handler {
 		opt := c.Options().Get(0)
 		if opt.Type != discordgo.ApplicationCommandOptionSubCommand || opt.Name != h.Name {
-			return
+			continue
 		}
 
 		ctx := &SubCommandCtx{c, h.Name}
