@@ -132,3 +132,40 @@ func (c *Ctx) User() (u *discordgo.User) {
 func (c *Ctx) Options() CommandOptions {
 	return c.Event.ApplicationCommandData().Options
 }
+
+// SubCommandHandler is the handler function used
+// to handle sub command calls.
+type SubCommandHandler func(ctx *SubCommandCtx) error
+
+// SubCommandCtx wraps the current command Ctx and
+// with the called sub command name and scopes the
+// command options to the options of the called
+// sub command.
+type SubCommandCtx struct {
+	*Ctx
+
+	SubCommandName string
+}
+
+// Options returns the options array of the called
+// sub command.
+func (c *SubCommandCtx) Options() CommandOptions {
+	return c.Ctx.Options().GetByName(c.SubCommandName).Options
+}
+
+// HandleSubCommand checks the options for a sub command
+// call with the given sub command name.
+//
+// If the call occured, the passed handler function is
+// executed which is getting passed the scoped
+// sub command Ctx.
+func (c *Ctx) HandleSubCommand(name string, handler SubCommandHandler) (err error) {
+	opt := c.Options().Get(0)
+	if opt.Type != discordgo.ApplicationCommandOptionSubCommand || opt.Name != name {
+		return
+	}
+
+	ctx := &SubCommandCtx{c, name}
+	err = handler(ctx)
+	return
+}
