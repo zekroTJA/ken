@@ -181,7 +181,7 @@ func (k *Ken) RegisterMiddlewares(mws ...interface{}) (err error) {
 // This can be skipped if you are using
 // a CommandStore.
 func (k *Ken) Unregister() (err error) {
-	if len(k.idcache) == 0 {
+	if k.opt.CommandStore != nil {
 		return
 	}
 
