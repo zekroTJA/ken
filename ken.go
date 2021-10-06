@@ -50,10 +50,11 @@ type Ken struct {
 	s   *discordgo.Session
 	opt *Options
 
-	cmdsLock sync.RWMutex
-	cmds     map[string]Command
-	idcache  map[string]string
-	ctxPool  sync.Pool
+	cmdsLock   sync.RWMutex
+	cmds       map[string]Command
+	idcache    map[string]string
+	ctxPool    sync.Pool
+	subCtxPool sync.Pool
 
 	mwBefore []MiddlewareBefore
 	mwAfter  []MiddlewareAfter
@@ -87,6 +88,11 @@ func New(s *discordgo.Session, options ...Options) (k *Ken, err error) {
 		ctxPool: sync.Pool{
 			New: func() interface{} {
 				return newCtx()
+			},
+		},
+		subCtxPool: sync.Pool{
+			New: func() interface{} {
+				return &SubCommandCtx{}
 			},
 		},
 		mwBefore: make([]MiddlewareBefore, 0),

@@ -164,6 +164,9 @@ func (c *SubCommandCtx) Options() CommandOptions {
 //
 // If the call occured, the passed handler function is
 // getting passed the scoped sub command Ctx.
+//
+// The SubCommandCtx passed must not be stored after
+// handler execution.
 func (c *Ctx) HandleSubCommands(handler ...SubCommandHandler) (err error) {
 	for _, h := range handler {
 		opt := c.Options().Get(0)
@@ -171,10 +174,12 @@ func (c *Ctx) HandleSubCommands(handler ...SubCommandHandler) (err error) {
 			continue
 		}
 
-		ctx := &SubCommandCtx{c, h.Name}
-		if err = h.Run(ctx); err != nil {
-			break
-		}
+		ctx := c.k.subCtxPool.Get().(*SubCommandCtx)
+		ctx.Ctx = c
+		ctx.SubCommandName = h.Name
+		err = h.Run(ctx)
+		c.k.subCtxPool.Put(ctx)
+		break
 	}
 	return
 }
