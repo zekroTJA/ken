@@ -31,13 +31,13 @@ For example, you can easily anwer to the event by using the [`Respond`](https://
 
 Speaking of follow up messages, there are some simple functions like [`FollowUp`](https://pkg.go.dev/github.com/zekrotja/ken#Ctx.FollowUp), [`FollowUpEmbed`](https://pkg.go.dev/github.com/zekrotja/ken#Ctx.FollowUpEmbed) or [`FollowUpError`](https://pkg.go.dev/github.com/zekrotja/ken#Ctx.FollowUpError) to make building these follow up messages easier. These functions also return a single [`FollowUpMessage`](https://pkg.go.dev/github.com/zekrotja/ken#FollowUpMessage) object so that you can chain other stuff like `DeleteAfter` to delete the follow up message after a given time span. 🤯
 
-The `Ctx` also allows you to handle sub commands using [`HandleSubCommands`](https://pkg.go.dev/github.com/zekrotja/ken#Ctx.HandleSubCommands). Simply pass a name and a handler function in a [`SubCommandGandler`](https://pkg.go.dev/github.com/zekrotja/ken#SubCommandHandler) to build your sub command tree. The sub command handlers are getting passed a specialized [`SubCommandCtx`](https://pkg.go.dev/github.com/zekrotja/ken#SubCommandCtx), which scopes the `Options` method to the options of the sub command. So you can handle your options like in a top level command.
+The `Ctx` also allows you to handle sub commands using [`HandleSubCommands`](https://pkg.go.dev/github.com/zekrotja/ken#Ctx.HandleSubCommands). Simply pass a name and a handler function in a [`SubCommandGandler`](https://pkg.go.dev/github.com/zekrotja/ken#SubCommandHandler) to build your sub command tree. The sub command handlers are getting passed a specialized [`SubCommandCtx`](https://pkg.go.dev/github.com/zekrotja/ken#SubCommandCtx), which scopes the `Options` method to the options of the sub command. So you can handle your options like in a top level command. In [this example](https://github.com/zekroTJA/ken/tree/master/examples/subcommands) you can see a practical implementation of this.
 
 ## Performance
 
 To avoid registering and unregistering commands everytime the bot restarts, ken allows to cache commands using a [`CommandStore`](https://pkg.go.dev/github.com/zekrotja/ken@v0.6.1/store#CommandStore). This is defaultly disabled, but if you want, you can use the default implementation [`LocalCommandStore`](https://pkg.go.dev/github.com/zekrotja/ken@v0.6.1/store#LocalCommandStore) which stores the commands in a file to be re-used on the next startup. Or simply implement your own store [using Redis](https://github.com/zekroTJA/shinpuru/tree/dev/pkg/rediscmdstore), for example.
 
-
+ken uses `sync.Pool` as object pools for the command contexts which are used for each command and sub command execution. This avoid creating a new context object for each command execution which can put strain on the garbage collector, especially on high command execution frequencies. 
 
 ## Example Usage
 
