@@ -6,6 +6,9 @@ import (
 
 // Ctx holds the invokation context of
 // a command.
+//
+// The Ctx must not be stored or used
+// after command execution.
 type Ctx struct {
 	ObjectMap
 
@@ -144,6 +147,9 @@ type SubCommandHandler struct {
 // with the called sub command name and scopes the
 // command options to the options of the called
 // sub command.
+//
+// The SubCommandCtx must not be stored or used
+// after command execution.
 type SubCommandCtx struct {
 	*Ctx
 
@@ -165,8 +171,8 @@ func (c *SubCommandCtx) Options() CommandOptions {
 // If the call occured, the passed handler function is
 // getting passed the scoped sub command Ctx.
 //
-// The SubCommandCtx passed must not be stored after
-// handler execution.
+// The SubCommandCtx passed must not be stored or used
+// after command execution.
 func (c *Ctx) HandleSubCommands(handler ...SubCommandHandler) (err error) {
 	for _, h := range handler {
 		opt := c.Options().Get(0)
