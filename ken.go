@@ -36,6 +36,13 @@ type Options struct {
 	DependencyProvider ObjectProvider
 	// EmbedColors lets you define custom colors for embeds.
 	EmbedColors EmbedColors
+	// DisableCommandInfoCache disabled caching
+	// the result of Ken#GetCommandInfo() after
+	// first call of the method.
+	//
+	// Only disable if you change information of
+	// a command during runtime.
+	DisableCommandInfoCache bool
 	// OnSystemError is called when a recoverable
 	// system error occurs inside Ken's lifecycle.
 	OnSystemError func(context string, err error, args ...interface{})
@@ -50,11 +57,12 @@ type Ken struct {
 	s   *discordgo.Session
 	opt *Options
 
-	cmdsLock   sync.RWMutex
-	cmds       map[string]Command
-	idcache    map[string]string
-	ctxPool    sync.Pool
-	subCtxPool sync.Pool
+	cmdsLock     sync.RWMutex
+	cmds         map[string]Command
+	idcache      map[string]string
+	cmdInfoCache CommandInfoList
+	ctxPool      sync.Pool
+	subCtxPool   sync.Pool
 
 	mwBefore []MiddlewareBefore
 	mwAfter  []MiddlewareAfter
@@ -66,6 +74,7 @@ var defaultOptions = Options{
 		Default: 0xFDD835,
 		Error:   0xF44336,
 	},
+	DisableCommandInfoCache: false,
 	OnSystemError: func(ctx string, err error, args ...interface{}) {
 		log.Printf("[KEN] {%s} - %s\n", ctx, err.Error())
 	},
@@ -110,6 +119,9 @@ func New(s *discordgo.Session, options ...Options) (k *Ken, err error) {
 		}
 		if o.CommandStore != nil {
 			k.opt.CommandStore = o.CommandStore
+		}
+		if o.DisableCommandInfoCache {
+			k.opt.DisableCommandInfoCache = true
 		}
 		if o.OnSystemError != nil {
 			k.opt.OnSystemError = o.OnSystemError
