@@ -24,6 +24,7 @@ func (*Internal) Channel(s *discordgo.Session, id string) (c *discordgo.Channel,
 	}
 	if c == nil {
 		c, err = s.Channel(id)
+		err = s.State.ChannelAdd(c)
 	}
 	return
 }
@@ -34,6 +35,7 @@ func (*Internal) Guild(s *discordgo.Session, id string) (g *discordgo.Guild, err
 	}
 	if g == nil {
 		g, err = s.Guild(id)
+		err = s.State.GuildAdd(g)
 	}
 	return
 }
@@ -50,6 +52,7 @@ func (*Internal) Role(s *discordgo.Session, gID, id string) (r *discordgo.Role, 
 
 	for _, r = range roles {
 		if r.ID == id {
+			err = s.State.RoleAdd(gID, r)
 			return
 		}
 	}
