@@ -38,6 +38,14 @@ func (m *FollowUpMessage) Edit(data *discordgo.WebhookEdit) (err error) {
 	return
 }
 
+// EditEmbed is shorthand for edit with the passed embed as
+// WebhookEdit data.
+func (m *FollowUpMessage) EditEmbed(emb *discordgo.MessageEmbed) (err error) {
+	return m.Edit(&discordgo.WebhookEdit{
+		Embeds: []*discordgo.MessageEmbed{emb},
+	})
+}
+
 // Delete removes the follow up message.
 func (m *FollowUpMessage) Delete() (err error) {
 	if m.Error != nil {
