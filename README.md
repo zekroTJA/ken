@@ -111,6 +111,31 @@ func main() {
 
 You can also find a "real world" implementation in my Discord Bot [shinpuru](https://github.com/zekrotja/shinpuru), where `ken` is used as main slash command framework.
 
+## FAQ
+
+### Why do my commands not show up in Discord?
+
+This may have multiple reasons.
+
+1. Check if you invited your Bot with the `applications.commands` OAuth2 scope. This option was added for bots to be permitted to create slash commands for a guild. When you already invited your bot before that, the bot will not be able to register slash commands. To fix this, simply kick the bot and re-invite it with an invite link containing the required `applications.commands` scope.  
+    > **Pro-Tip:** You can go to the `OAuth2` Page in the Discord Application settings to generate a suitable invite link.  
+    ![](https://i.imgur.com/bEwV8J4.png)
+
+2. When a command needs to be created (if you start the bot with a newly added command), It may take up to 15-30 minutes *(based on personal experience)* until the command shows up in Guilds. After that *(when CommandStore is enabled)*, commands are re-used and updated, which does not take that much time.  
+    > **Pro-Tip:** To create a command, you just need to specify a valid name, description and options and add it to ken's handler register. After that, start the bot in the background and then implement the command logic to bridge the time until the command shows up to test it.
+
+3. As I have experienced personally, sometimes, you might need to restart your Discord client until commands show op on Guilds. And sometimes you even need to kick and re-invite the bot so that they show up. I don't really know if this is a registration issue on ken's site. If you know more about that, please let me know!
+
+### Why do I get the error `command name is invalid`?
+
+Discord has some very strong restrictions to the naming of commands and command options. The name of a command, sub command or command option must be unique and must match the regex [`^[a-z0-9-_]{1,32}$`](https://regexr.com/676jb)¹.
+
+If you are not familiar with regex, the name must match the following conditions:
+- It must only contain lowercase letters, numbers, dashes and underscores.
+- It must be at least 1 character and at most 32 characters long.
+
+*¹ The pattern described in the Discord docs `^[\w-]{1,32}$` is actually not accurate, because you can not use uppercase letters in names, but you can use underscores.*
+
 ---
 
 © 2021 Ringo Hoffmann (zekro Development).  
