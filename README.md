@@ -19,6 +19,8 @@ It may sound crazy, but `ken` tries to simplify the complexity behind slash-comm
 
 The command-registration and middleware system is built so that you can add whatever functionality you want to your command structure and handle it all in your middleware which can be called before and/or after command execution. The only thing required is that your commands implement the basic [`Command`](https://pkg.go.dev/github.com/zekrotja/ken#Command) interface.
 
+![Command Pipeline](.github/media/commandpipeline-scheme.png)
+
 In the [middleware example](examples/middlewares), you can take a look at how to implement custom functionality in your command structure and add middleware functions to handle these.
 
 Via options you can also specify a custom state handler, if you are using something like [dgrs](https://github.com/zekrotja/dgrs) for example.
