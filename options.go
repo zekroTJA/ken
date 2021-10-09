@@ -1,6 +1,8 @@
 package ken
 
 import (
+	"strings"
+
 	"github.com/bwmarrin/discordgo"
 )
 
@@ -116,4 +118,14 @@ func (o *CommandOption) UserValue(ctx *Ctx) *discordgo.User {
 	}
 
 	return user
+}
+
+// StringValue is a utility function for casting option value to string.
+//
+// Because you can not pass multiline string entries to slash commands,
+// this converts `\n` in a message to an actual line break.
+func (o *CommandOption) StringValue() (v string) {
+	v = o.ApplicationCommandInteractionDataOption.StringValue()
+	v = strings.ReplaceAll(v, "\\n", "\n")
+	return
 }
