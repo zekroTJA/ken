@@ -314,6 +314,7 @@ func (k *Ken) onInteractionCreate(s *discordgo.Session, e *discordgo.Interaction
 	ctx := k.ctxPool.Get().(*Ctx)
 	defer k.ctxPool.Put(ctx)
 	ctx.Purge()
+	ctx.responded = false
 	ctx.k = k
 	ctx.Session = s
 	ctx.Event = e
