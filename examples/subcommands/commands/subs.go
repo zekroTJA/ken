@@ -66,10 +66,6 @@ func (c *SubsCommand) IsDmCapable() bool {
 }
 
 func (c *SubsCommand) Run(ctx *ken.Ctx) (err error) {
-	if err = ctx.Defer(); err != nil {
-		return
-	}
-
 	err = ctx.HandleSubCommands(
 		ken.SubCommandHandler{"one", c.one},
 		ken.SubCommandHandler{"two", c.two},
@@ -79,6 +75,9 @@ func (c *SubsCommand) Run(ctx *ken.Ctx) (err error) {
 }
 
 func (c *SubsCommand) one(ctx *ken.SubCommandCtx) (err error) {
+	if err = ctx.Defer(); err != nil {
+		return
+	}
 	arg := ctx.Options().GetByName("arg").StringValue()
 	err = ctx.FollowUpEmbed(&discordgo.MessageEmbed{
 		Description: "one: " + arg,
@@ -91,8 +90,8 @@ func (c *SubsCommand) two(ctx *ken.SubCommandCtx) (err error) {
 	if argV, ok := ctx.Options().GetByNameOptional("arg"); ok {
 		arg = int(argV.IntValue())
 	}
-	err = ctx.FollowUpEmbed(&discordgo.MessageEmbed{
+	err = ctx.RespondEmbed(&discordgo.MessageEmbed{
 		Description: fmt.Sprintf("two: %d", arg),
-	}).Error
+	})
 	return
 }
