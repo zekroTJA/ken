@@ -25,6 +25,4 @@ jobs:
         run: go mod download
 
       - name: Compile Examples
-        run: |
-          go build -v examples/basic/main.go
-          go build -v examples/middlewares/main.go
+        run: sh scripts/build-examples.sh
