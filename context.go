@@ -33,13 +33,56 @@ func newCtx() *Ctx {
 // Respond to an interaction event with the given
 // interaction response payload.
 func (c *Ctx) Respond(r *discordgo.InteractionResponse) (err error) {
-	// Avoid multiple responses
 	if c.responded {
-		return nil
+		if r == nil || r.Data == nil {
+			return
+		}
+		var self *discordgo.User
+		if self, err = c.k.opt.State.SelfUser(c.Session); err != nil {
+			return
+		}
+		_, err = c.Session.InteractionResponseEdit(self.ID, c.Event.Interaction, &discordgo.WebhookEdit{
+			Content:         r.Data.Content,
+			Embeds:          r.Data.Embeds,
+			Components:      r.Data.Components,
+			Files:           r.Data.Files,
+			AllowedMentions: r.Data.AllowedMentions,
+		})
+	} else {
+		err = c.Session.InteractionRespond(c.Event.Interaction, r)
+		c.responded = err == nil
+		if err != nil {
+			_ = err
+		}
 	}
-	err = c.Session.InteractionRespond(c.Event.Interaction, r)
-	c.responded = err == nil
 	return
+}
+
+// RespondEmbed is shorthand for Respond with an
+// embed payload as passed.
+func (c *Ctx) RespondEmbed(emb *discordgo.MessageEmbed) (err error) {
+	if emb.Color <= 0 {
+		emb.Color = c.k.opt.EmbedColors.Default
+	}
+	return c.Respond(&discordgo.InteractionResponse{
+		Type: discordgo.InteractionResponseChannelMessageWithSource,
+		Data: &discordgo.InteractionResponseData{
+			Embeds: []*discordgo.MessageEmbed{
+				emb,
+			},
+		},
+	})
+}
+
+// RespondError is shorthand for RespondEmbed with an
+// error embed as message with the passed content and
+// title.
+func (c *Ctx) RespondError(content, title string) (err error) {
+	return c.RespondEmbed(&discordgo.MessageEmbed{
+		Description: content,
+		Title:       title,
+		Color:       c.k.opt.EmbedColors.Error,
+	})
 }
 
 // FollowUp creates a follow up message to the
@@ -92,9 +135,10 @@ func (c *Ctx) FollowUpError(content, title string) (fum *FollowUpMessage) {
 // It should be used when the interaction response can not be
 // instantly returned.
 func (c *Ctx) Defer() (err error) {
-	return c.Respond(&discordgo.InteractionResponse{
+	err = c.Respond(&discordgo.InteractionResponse{
 		Type: discordgo.InteractionResponseDeferredChannelMessageWithSource,
 	})
+	return
 }
 
 // Get either returns an instance from the internal object map -
