@@ -12,9 +12,10 @@ import (
 type Ctx struct {
 	ObjectMap
 
-	k         *Ken
 	responded bool
 
+	// Ken keeps a reference to the main Ken instance.
+	Ken *Ken
 	// Session holds the discordgo session instance.
 	Session *discordgo.Session
 	// Event provides the InteractionCreate event
@@ -38,7 +39,7 @@ func (c *Ctx) Respond(r *discordgo.InteractionResponse) (err error) {
 			return
 		}
 		var self *discordgo.User
-		if self, err = c.k.opt.State.SelfUser(c.Session); err != nil {
+		if self, err = c.Ken.opt.State.SelfUser(c.Session); err != nil {
 			return
 		}
 		_, err = c.Session.InteractionResponseEdit(self.ID, c.Event.Interaction, &discordgo.WebhookEdit{
@@ -62,7 +63,7 @@ func (c *Ctx) Respond(r *discordgo.InteractionResponse) (err error) {
 // embed payload as passed.
 func (c *Ctx) RespondEmbed(emb *discordgo.MessageEmbed) (err error) {
 	if emb.Color <= 0 {
-		emb.Color = c.k.opt.EmbedColors.Default
+		emb.Color = c.Ken.opt.EmbedColors.Default
 	}
 	return c.Respond(&discordgo.InteractionResponse{
 		Type: discordgo.InteractionResponseChannelMessageWithSource,
@@ -81,7 +82,7 @@ func (c *Ctx) RespondError(content, title string) (err error) {
 	return c.RespondEmbed(&discordgo.MessageEmbed{
 		Description: content,
 		Title:       title,
-		Color:       c.k.opt.EmbedColors.Error,
+		Color:       c.Ken.opt.EmbedColors.Error,
 	})
 }
 
@@ -97,7 +98,7 @@ func (c *Ctx) FollowUp(wait bool, data *discordgo.WebhookParams) (fum *FollowUpM
 		s: c.Session,
 		i: c.Event.Interaction,
 	}
-	fum.self, fum.Error = c.k.opt.State.SelfUser(c.Session)
+	fum.self, fum.Error = c.Ken.opt.State.SelfUser(c.Session)
 	if fum.Error != nil {
 		return
 	}
@@ -109,7 +110,7 @@ func (c *Ctx) FollowUp(wait bool, data *discordgo.WebhookParams) (fum *FollowUpM
 // embed payload as passed.
 func (c *Ctx) FollowUpEmbed(emb *discordgo.MessageEmbed) (fum *FollowUpMessage) {
 	if emb.Color <= 0 {
-		emb.Color = c.k.opt.EmbedColors.Default
+		emb.Color = c.Ken.opt.EmbedColors.Default
 	}
 	return c.FollowUp(true, &discordgo.WebhookParams{
 		Embeds: []*discordgo.MessageEmbed{
@@ -125,7 +126,7 @@ func (c *Ctx) FollowUpError(content, title string) (fum *FollowUpMessage) {
 	return c.FollowUpEmbed(&discordgo.MessageEmbed{
 		Description: content,
 		Title:       title,
-		Color:       c.k.opt.EmbedColors.Error,
+		Color:       c.Ken.opt.EmbedColors.Error,
 	})
 }
 
@@ -146,8 +147,8 @@ func (c *Ctx) Defer() (err error) {
 // dependency provider, if available. When no object was found in
 // either of both maps, nil is returned.
 func (c *Ctx) Get(key string) (v interface{}) {
-	if v = c.ObjectMap.Get(key); v == nil && c.k.opt.DependencyProvider != nil {
-		v = c.k.opt.DependencyProvider.Get(key)
+	if v = c.ObjectMap.Get(key); v == nil && c.Ken.opt.DependencyProvider != nil {
+		v = c.Ken.opt.DependencyProvider.Get(key)
 	}
 	return
 }
@@ -155,13 +156,13 @@ func (c *Ctx) Get(key string) (v interface{}) {
 // Channel tries to fetch the channel object from the contained
 // channel ID using the specified state manager.
 func (c *Ctx) Channel() (*discordgo.Channel, error) {
-	return c.k.opt.State.Channel(c.Session, c.Event.ChannelID)
+	return c.Ken.opt.State.Channel(c.Session, c.Event.ChannelID)
 }
 
 // Channel tries to fetch the guild object from the contained
 // guild ID using the specified state manager.
 func (c *Ctx) Guild() (*discordgo.Guild, error) {
-	return c.k.opt.State.Guild(c.Session, c.Event.GuildID)
+	return c.Ken.opt.State.Guild(c.Session, c.Event.GuildID)
 }
 
 // User returns the User object of the executor either from
@@ -224,11 +225,11 @@ func (c *Ctx) HandleSubCommands(handler ...SubCommandHandler) (err error) {
 			continue
 		}
 
-		ctx := c.k.subCtxPool.Get().(*SubCommandCtx)
+		ctx := c.Ken.subCtxPool.Get().(*SubCommandCtx)
 		ctx.Ctx = c
 		ctx.SubCommandName = h.Name
 		err = h.Run(ctx)
-		c.k.subCtxPool.Put(ctx)
+		c.Ken.subCtxPool.Put(ctx)
 		break
 	}
 	return

@@ -315,7 +315,7 @@ func (k *Ken) onInteractionCreate(s *discordgo.Session, e *discordgo.Interaction
 	defer k.ctxPool.Put(ctx)
 	ctx.Purge()
 	ctx.responded = false
-	ctx.k = k
+	ctx.Ken = k
 	ctx.Session = s
 	ctx.Event = e
 	ctx.Command = cmd

@@ -70,7 +70,7 @@ func (o *CommandOption) ChannelValue(ctx *Ctx) *discordgo.Channel {
 		return &discordgo.Channel{ID: chanID}
 	}
 
-	ch, err := ctx.k.opt.State.Channel(ctx.Session, chanID)
+	ch, err := ctx.Ken.opt.State.Channel(ctx.Session, chanID)
 	if err != nil {
 		return &discordgo.Channel{ID: chanID}
 	}
@@ -91,7 +91,7 @@ func (o *CommandOption) RoleValue(ctx *Ctx) *discordgo.Role {
 		return &discordgo.Role{ID: roleID}
 	}
 
-	role, err := ctx.k.opt.State.Role(ctx.Session, ctx.Event.GuildID, roleID)
+	role, err := ctx.Ken.opt.State.Role(ctx.Session, ctx.Event.GuildID, roleID)
 	if err != nil {
 		return &discordgo.Role{ID: roleID}
 	}
@@ -112,7 +112,7 @@ func (o *CommandOption) UserValue(ctx *Ctx) *discordgo.User {
 		return &discordgo.User{ID: userID}
 	}
 
-	user, err := ctx.k.opt.State.User(ctx.Session, userID)
+	user, err := ctx.Ken.opt.State.User(ctx.Session, userID)
 	if err != nil {
 		return &discordgo.User{ID: userID}
 	}
