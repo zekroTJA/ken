@@ -24,6 +24,9 @@ func (*Internal) Channel(s *discordgo.Session, id string) (c *discordgo.Channel,
 	}
 	if c == nil {
 		c, err = s.Channel(id)
+		if err != nil {
+			return
+		}
 		err = s.State.ChannelAdd(c)
 	}
 	return
@@ -35,6 +38,9 @@ func (*Internal) Guild(s *discordgo.Session, id string) (g *discordgo.Guild, err
 	}
 	if g == nil {
 		g, err = s.Guild(id)
+		if err != nil {
+			return
+		}
 		err = s.State.GuildAdd(g)
 	}
 	return
