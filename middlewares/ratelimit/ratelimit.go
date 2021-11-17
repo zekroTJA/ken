@@ -2,6 +2,7 @@ package ratelimit
 
 import (
 	"fmt"
+	"time"
 
 	"github.com/bwmarrin/discordgo"
 	"github.com/zekrotja/ken"
@@ -53,11 +54,12 @@ func (m *Middleware) Before(ctx *ken.Ctx) (next bool, err error) {
 		}
 	}
 
-	limiter := m.manager.GetLimiter(ctx.Command, ctx.Event.User.ID, guildID)
+	limiter := m.manager.GetLimiter(ctx.Command, ctx.User().ID, guildID)
+	fmt.Println(ctx.Command, ctx.User().ID, guildID)
 	if ok, next := limiter.Take(); !ok {
-		err := ctx.FollowUpError(fmt.Sprintf(
+		err := ctx.RespondError(fmt.Sprintf(
 			"You are being ratelimited.\nWait %s until you can use this command again.",
-			next.String()), "Rate Limited").Error
+			next.Round(1*time.Second).String()), "Rate Limited")
 		return false, err
 	}
 
