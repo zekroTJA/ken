@@ -55,7 +55,6 @@ func (m *Middleware) Before(ctx *ken.Ctx) (next bool, err error) {
 	}
 
 	limiter := m.manager.GetLimiter(ctx.Command, ctx.User().ID, guildID)
-	fmt.Println(ctx.Command, ctx.User().ID, guildID)
 	if ok, next := limiter.Take(); !ok {
 		err := ctx.RespondError(fmt.Sprintf(
 			"You are being ratelimited.\nWait %s until you can use this command again.",
