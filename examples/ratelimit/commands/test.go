@@ -5,7 +5,7 @@ import (
 
 	"github.com/bwmarrin/discordgo"
 	"github.com/zekrotja/ken"
-	"github.com/zekrotja/ken/middlewares/ratelimit"
+	"github.com/zekrotja/ken/middlewares/ratelimit/v2"
 )
 
 type TestCommand struct{}
