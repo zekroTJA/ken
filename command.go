@@ -28,7 +28,7 @@ func toApplicationCommand(c Command) *discordgo.ApplicationCommand {
 	case SlashCommand:
 		return &discordgo.ApplicationCommand{
 			Name:        cm.Name(),
-			Type:        cm.Type(),
+			Type:        discordgo.ChatApplicationCommand,
 			Description: cm.Description(),
 			Version:     cm.Version(),
 			Options:     cm.Options(),
@@ -36,6 +36,7 @@ func toApplicationCommand(c Command) *discordgo.ApplicationCommand {
 	case UserCommand:
 		return &discordgo.ApplicationCommand{
 			Name: cm.Name(),
+			Type: discordgo.UserApplicationCommand,
 		}
 	default:
 		panic(fmt.Sprintf("Command type not implemented for command: %s", cm.Name()))

@@ -8,8 +8,7 @@ type SlashCommand interface {
 
 	// Version returns the commands semantic version.
 	Version() string
-	// Type returns the commands command type.
-	Type() discordgo.ApplicationCommandType
+
 	// Options returns an array of application
 	// command options.
 	Options() []*discordgo.ApplicationCommandOption
