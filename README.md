@@ -5,19 +5,24 @@
 > ⚠️ **Disclaimer**  
 > This package is still in a very early state of development and future updates might include breaking changes to the API until the first official release.
 
-剣 *(`ken` - japanese for `Sword`)* - A cutting edge *(haha)*, prototype, object-oriented and highly modular slash-command handler for [Discordgo](https://github.com/bwmarrin/discordgo).
-
-This work-in-progress slash-command handler is designed to be used in future versions of [shinpuru](https://github.com/zekroTJA/shinpuru).
+剣 *(`ken` - japanese for `Sword`)* - A cutting edge *(haha)*, prototype, object-oriented and highly modular [Discord application commands](https://discord.com/developers/docs/interactions/application-commands) handler for [Discordgo](https://github.com/bwmarrin/discordgo).
 
 For basic usage examples, see the [basic example section](examples/basic). Examples on how to use middlewares can be found [here](examples/middlewares).
 
+This package was primarily written with the motivation to use it in my Discord bot [shinpuru](https://github.com/zekroTJA/shinpuru).
+
 ## Why should you use this package?
 
-It may sound crazy, but `ken` tries to simplify the complexity behind slash-command registration and command handling while giving you full control over the event handling and registration process.
+It may sound crazy, but `ken` tries to simplify the complexity behind application command registration and command handling while giving you full control over the event handling and registration process.
+
+Also, ken provides a higly modular middleware pipeline to control who can use commands and how they should be handled.
 
 ### High modularity due to OOP
 
-The command-registration and middleware system is built so that you can add whatever functionality you want to your command structure and handle it all in your middleware which can be called before and/or after command execution. The only thing required is that your commands implement the basic [`Command`](https://pkg.go.dev/github.com/zekrotja/ken#Command) interface.
+The command-registration and middleware system is built so that you can add whatever functionality you want to your command structure and handle it all in your middleware which can be called before and/or after command execution. The only thing required is that your commands implements one of the provided command interfaes:
+- [`SlashCommand`](slashcommand.go)
+- [`UserCommand`](usercommand.go)
+- [`MessageCommand`](messagecommand.go)
 
 ![Command Pipeline](.github/media/commandpipeline-scheme.png)
 
@@ -50,7 +55,7 @@ package main
 
 type TestCommand struct{}
 
-var _ ken.Command = (*TestCommand)(nil)
+var _ ken.SlashCommand = (*TestCommand)(nil)
 
 func (c *TestCommand) Name() string {
 	return "ping"
@@ -62,10 +67,6 @@ func (c *TestCommand) Description() string {
 
 func (c *TestCommand) Version() string {
 	return "1.0.0"
-}
-
-func (c *TestCommand) Type() discordgo.ApplicationCommandType {
-	return discordgo.ChatApplicationCommand
 }
 
 func (c *TestCommand) Options() []*discordgo.ApplicationCommandOption {
