@@ -155,7 +155,7 @@ func New(s *discordgo.Session, options ...Options) (k *Ken, err error) {
 //
 // Keep in mind that commands are registered by Name,
 // so there can be only one single command per name.
-func (k *Ken) RegisterCommands(cmds ...Command) (err error) {
+func (k *Ken) RegisterCommands(cmds ...SlashCommand) (err error) {
 	k.cmdsLock.Lock()
 	defer k.cmdsLock.Unlock()
 
@@ -215,7 +215,7 @@ func (k *Ken) Unregister() (err error) {
 	return
 }
 
-func (k *Ken) registerCommand(cmd Command) (err error) {
+func (k *Ken) registerCommand(cmd SlashCommand) (err error) {
 	if cmd.Name() == "" {
 		err = ErrEmptyCommandName
 		return
