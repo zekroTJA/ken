@@ -38,6 +38,11 @@ func toApplicationCommand(c Command) *discordgo.ApplicationCommand {
 			Name: cm.Name(),
 			Type: discordgo.UserApplicationCommand,
 		}
+	case MessageCommand:
+		return &discordgo.ApplicationCommand{
+			Name: cm.Name(),
+			Type: discordgo.MessageApplicationCommand,
+		}
 	default:
 		panic(fmt.Sprintf("Command type not implemented for command: %s", cm.Name()))
 	}

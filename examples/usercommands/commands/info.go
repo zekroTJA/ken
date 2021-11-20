@@ -11,8 +11,10 @@ var (
 	_ ken.UserCommand = (*InfoUserCommand)(nil)
 )
 
+func (c *InfoUserCommand) TypeUser() {}
+
 func (c *InfoUserCommand) Name() string {
-	return "info"
+	return "userinfo"
 }
 
 func (c *InfoUserCommand) Description() string {

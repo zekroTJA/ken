@@ -4,11 +4,12 @@ package ken
 type MessageCommand interface {
 	Command
 
-	// Run is called on command invokation getting
-	// passed the invocation context.
+	// TypeMessage is used to differenciate between
+	// UserCommand and MessageCommand which have
+	// the same structure otherwise.
 	//
-	// When something goes wrong during command
-	// execution, you can return an error which is
-	// then handled by Ken's OnCommandError handler.
-	Run(ctx *Ctx) (err error)
+	// This method must only be implemented and
+	// will never be called by ken, so it can be
+	// completely empty.
+	TypeMessage()
 }
