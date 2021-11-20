@@ -7,7 +7,7 @@ import (
 
 	"github.com/bwmarrin/discordgo"
 	"github.com/zekrotja/ken"
-	"github.com/zekrotja/ken/examples/usercommands/commands"
+	"github.com/zekrotja/ken/examples/usermsgcommands/commands"
 	"github.com/zekrotja/ken/store"
 )
 
@@ -31,7 +31,10 @@ func main() {
 	})
 	must(err)
 
-	must(k.RegisterCommands(new(commands.InfoUserCommand)))
+	must(k.RegisterCommands(
+		new(commands.InfoUserCommand),
+		new(commands.DeleteMessageCommand),
+	))
 
 	defer k.Unregister()
 
