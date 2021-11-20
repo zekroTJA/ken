@@ -281,6 +281,7 @@ func (k *Ken) onReady(s *discordgo.Session, e *discordgo.Ready) {
 
 	for name, id := range k.idcache {
 		if _, ok := k.cmds[name]; !ok {
+			delete(k.idcache, name)
 			err = s.ApplicationCommandDelete(e.User.ID, "", id)
 			if err != nil {
 				k.opt.OnSystemError("command delete", err)
