@@ -1,21 +1,18 @@
 package ken
 
-import "github.com/bwmarrin/discordgo"
+import (
+	"fmt"
 
-// Command defines a callable slash command.
+	"github.com/bwmarrin/discordgo"
+)
+
 type Command interface {
 	// Name returns the unique name of the command.
 	Name() string
+
 	// Description returns a brief text which concisely
 	// describes the commands purpose.
 	Description() string
-	// Version returns the commands semantic version.
-	Version() string
-	// Type returns the commands command type.
-	Type() discordgo.ApplicationCommandType
-	// Options returns an array of application
-	// command options.
-	Options() []*discordgo.ApplicationCommandOption
 
 	// Run is called on command invokation getting
 	// passed the invocation context.
@@ -26,20 +23,22 @@ type Command interface {
 	Run(ctx *Ctx) (err error)
 }
 
-// DmCapable extends a command to specify if it is
-// able to be executed in DMs or not.
-type DmCapable interface {
-	// IsDmCapable returns true if the command can
-	// be used in DMs.
-	IsDmCapable() bool
-}
-
 func toApplicationCommand(c Command) *discordgo.ApplicationCommand {
-	return &discordgo.ApplicationCommand{
-		Name:        c.Name(),
-		Type:        c.Type(),
-		Description: c.Description(),
-		Version:     c.Version(),
-		Options:     c.Options(),
+	switch cm := c.(type) {
+	case SlashCommand:
+		return &discordgo.ApplicationCommand{
+			Name:        cm.Name(),
+			Type:        discordgo.ChatApplicationCommand,
+			Description: cm.Description(),
+			Version:     cm.Version(),
+			Options:     cm.Options(),
+		}
+	case UserCommand:
+		return &discordgo.ApplicationCommand{
+			Name: cm.Name(),
+			Type: discordgo.UserApplicationCommand,
+		}
+	default:
+		panic(fmt.Sprintf("Command type not implemented for command: %s", cm.Name()))
 	}
 }

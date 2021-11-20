@@ -11,7 +11,7 @@ import (
 type KickCommand struct{}
 
 var (
-	_ ken.Command                     = (*KickCommand)(nil)
+	_ ken.SlashCommand                = (*KickCommand)(nil)
 	_ middlewares.RequiresRoleCommand = (*KickCommand)(nil)
 )
 

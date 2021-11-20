@@ -10,8 +10,8 @@ import (
 type SubsCommand struct{}
 
 var (
-	_ ken.Command   = (*SubsCommand)(nil)
-	_ ken.DmCapable = (*SubsCommand)(nil)
+	_ ken.SlashCommand = (*SubsCommand)(nil)
+	_ ken.DmCapable    = (*SubsCommand)(nil)
 )
 
 func (c *SubsCommand) Name() string {

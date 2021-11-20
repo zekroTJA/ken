@@ -8,8 +8,8 @@ import (
 type TestCommand struct{}
 
 var (
-	_ ken.Command   = (*TestCommand)(nil)
-	_ ken.DmCapable = (*TestCommand)(nil)
+	_ ken.SlashCommand = (*TestCommand)(nil)
+	_ ken.DmCapable    = (*TestCommand)(nil)
 )
 
 func (c *TestCommand) Name() string {

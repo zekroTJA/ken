@@ -181,6 +181,27 @@ func (c *Ctx) Options() CommandOptions {
 	return c.Event.ApplicationCommandData().Options
 }
 
+// SlashCommand returns the contexts Command as a
+// SlashCommand interface.
+func (c *Ctx) SlashCommand() (cmd SlashCommand, ok bool) {
+	cmd, ok = c.Command.(SlashCommand)
+	return
+}
+
+// UserCommand returns the contexts Command as a
+// UserCommand interface.
+func (c *Ctx) UserCommand() (cmd UserCommand, ok bool) {
+	cmd, ok = c.Command.(UserCommand)
+	return
+}
+
+// MessageCommand returns the contexts Command as a
+// MessageCommand interface.
+func (c *Ctx) MessageCommand() (cmd MessageCommand, ok bool) {
+	cmd, ok = c.Command.(MessageCommand)
+	return
+}
+
 // SubCommandHandler is the handler function used
 // to handle sub command calls.
 type SubCommandHandler struct {
