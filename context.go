@@ -183,15 +183,22 @@ func (c *Ctx) Options() CommandOptions {
 
 // SlashCommand returns the contexts Command as a
 // SlashCommand interface.
-func (c *Ctx) SlashCommand() (cmd SlashCommand) {
-	cmd, _ = c.Command.(SlashCommand)
+func (c *Ctx) SlashCommand() (cmd SlashCommand, ok bool) {
+	cmd, ok = c.Command.(SlashCommand)
 	return
 }
 
 // UserCommand returns the contexts Command as a
 // UserCommand interface.
-func (c *Ctx) UserCommand() (cmd UserCommand) {
-	cmd, _ = c.Command.(UserCommand)
+func (c *Ctx) UserCommand() (cmd UserCommand, ok bool) {
+	cmd, ok = c.Command.(UserCommand)
+	return
+}
+
+// MessageCommand returns the contexts Command as a
+// MessageCommand interface.
+func (c *Ctx) MessageCommand() (cmd MessageCommand, ok bool) {
+	cmd, ok = c.Command.(MessageCommand)
 	return
 }
 
