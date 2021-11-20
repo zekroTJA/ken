@@ -11,6 +11,13 @@ For basic usage examples, see the [basic example section](examples/basic). Examp
 
 This package was primarily written with the motivation to use it in my Discord bot [shinpuru](https://github.com/zekroTJA/shinpuru).
 
+## All you need to know
+
+- [Docs](https://pkg.go.dev/github.com/zekrotja/ken)
+- [Examples](examples/)
+- [Releases](https://github.com/zekroTJA/ken/releases)
+- ["Real World" Examples](#projects-using-ken)
+
 ## Why should you use this package?
 
 It may sound crazy, but `ken` tries to simplify the complexity behind application command registration and command handling while giving you full control over the event handling and registration process.
@@ -136,6 +143,13 @@ If you are not familiar with regex, the name must match the following conditions
 - It must be at least 1 character and at most 32 characters long.
 
 *¹ The pattern described in the Discord docs `^[\w-]{1,32}$` is actually not accurate, because you can not use uppercase letters in names, but you can use underscores.*
+
+## Projects using ken
+
+> If you used ken in your project, feel free to add it here with a [pull request](https://github.com/zekroTJA/ken/pulls). 😉
+
+- [zekrotja/shinpuru](https://github.com/zekrotja/shinpuru)
+- [zekrotja/dcdl](https://github.com/zekrotja/dcdl)
 
 ---
 
