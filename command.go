@@ -25,14 +25,6 @@ type Command interface {
 
 func toApplicationCommand(c Command) *discordgo.ApplicationCommand {
 	switch cm := c.(type) {
-	case SlashCommand:
-		return &discordgo.ApplicationCommand{
-			Name:        cm.Name(),
-			Type:        discordgo.ChatApplicationCommand,
-			Description: cm.Description(),
-			Version:     cm.Version(),
-			Options:     cm.Options(),
-		}
 	case UserCommand:
 		return &discordgo.ApplicationCommand{
 			Name: cm.Name(),
@@ -42,6 +34,14 @@ func toApplicationCommand(c Command) *discordgo.ApplicationCommand {
 		return &discordgo.ApplicationCommand{
 			Name: cm.Name(),
 			Type: discordgo.MessageApplicationCommand,
+		}
+	case SlashCommand:
+		return &discordgo.ApplicationCommand{
+			Name:        cm.Name(),
+			Type:        discordgo.ChatApplicationCommand,
+			Description: cm.Description(),
+			Version:     cm.Version(),
+			Options:     cm.Options(),
 		}
 	default:
 		panic(fmt.Sprintf("Command type not implemented for command: %s", cm.Name()))
