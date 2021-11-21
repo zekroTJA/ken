@@ -33,6 +33,9 @@ func newCtx() *Ctx {
 
 // Respond to an interaction event with the given
 // interaction response payload.
+//
+// When an interaction has already been responded to,
+// the response will be edited instead on execution.
 func (c *Ctx) Respond(r *discordgo.InteractionResponse) (err error) {
 	if c.responded {
 		if r == nil || r.Data == nil {

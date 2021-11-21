@@ -6,12 +6,19 @@ import (
 	"github.com/bwmarrin/discordgo"
 )
 
+// Command specifies the base interface for an
+// application command.
 type Command interface {
 	// Name returns the unique name of the command.
 	Name() string
 
 	// Description returns a brief text which concisely
 	// describes the commands purpose.
+	//
+	// Currently, this is ignored by user and message
+	// commands, because the API currently does not
+	// support descriptions for these types of
+	// application commands.
 	Description() string
 
 	// Run is called on command invokation getting
