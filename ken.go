@@ -320,6 +320,7 @@ func (k *Ken) onInteractionCreate(s *discordgo.Session, e *discordgo.Interaction
 	ctx.Session = s
 	ctx.Event = e
 	ctx.Command = cmd
+	ctx.Ephemeral = false
 
 	if ch.Type == discordgo.ChannelTypeDM || ch.Type == discordgo.ChannelTypeGroupDM {
 		if dmCmd, ok := cmd.(DmCapable); !ok || !dmCmd.IsDmCapable() {
