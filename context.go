@@ -39,7 +39,7 @@ func newCtx() *Ctx {
 func (c *Ctx) messageFlags(p uint64) (f uint64) {
 	f = p
 	if c.Ephemeral {
-		f &= uint64(discordgo.MessageFlagsEphemeral)
+		f |= uint64(discordgo.MessageFlagsEphemeral)
 	}
 	return
 }
