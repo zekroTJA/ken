@@ -18,7 +18,7 @@ func (c *InfoUserCommand) Name() string {
 }
 
 func (c *InfoUserCommand) Description() string {
-	return "Dispaly user information."
+	return "Display user information."
 }
 
 func (c *InfoUserCommand) Run(ctx *ken.Ctx) (err error) {
