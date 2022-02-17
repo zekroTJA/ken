@@ -322,6 +322,10 @@ func (k *Ken) onInteractionCreate(s *discordgo.Session, e *discordgo.Interaction
 	ctx.Command = cmd
 	ctx.Ephemeral = false
 
+	if rpCmd, ok := cmd.(ResponsePolicyCommand); ok {
+		ctx.Ephemeral = rpCmd.ResponsePolicy().Ephemeral
+	}
+
 	if ch.Type == discordgo.ChannelTypeDM || ch.Type == discordgo.ChannelTypeGroupDM {
 		if dmCmd, ok := cmd.(DmCapable); !ok || !dmCmd.IsDmCapable() {
 			k.opt.OnCommandError(ErrNotDMCapable, ctx)
