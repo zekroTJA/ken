@@ -23,6 +23,11 @@ type Ctx struct {
 	Event *discordgo.InteractionCreate
 	// Command provides the called command instance.
 	Command Command
+
+	// Ephemeral can be set to true which will
+	// send all subsequent command responses
+	// only to the user which invoked the command.
+	Ephemeral bool
 }
 
 func newCtx() *Ctx {
@@ -31,12 +36,21 @@ func newCtx() *Ctx {
 	}
 }
 
+func (c *Ctx) messageFlags(p uint64) (f uint64) {
+	f = p
+	if c.Ephemeral {
+		f &= uint64(discordgo.MessageFlagsEphemeral)
+	}
+	return
+}
+
 // Respond to an interaction event with the given
 // interaction response payload.
 //
 // When an interaction has already been responded to,
 // the response will be edited instead on execution.
 func (c *Ctx) Respond(r *discordgo.InteractionResponse) (err error) {
+	r.Data.Flags = uint64(c.messageFlags(r.Data.Flags))
 	if c.responded {
 		if r == nil || r.Data == nil {
 			return
@@ -97,6 +111,7 @@ func (c *Ctx) RespondError(content, title string) (err error) {
 // This way it allows to be chained in one call with
 // subsequent FollowUpMessage method calls.
 func (c *Ctx) FollowUp(wait bool, data *discordgo.WebhookParams) (fum *FollowUpMessage) {
+	data.Flags = uint64(c.messageFlags(data.Flags))
 	fum = &FollowUpMessage{
 		s: c.Session,
 		i: c.Event.Interaction,
