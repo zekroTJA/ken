@@ -50,9 +50,10 @@ func (c *Ctx) messageFlags(p uint64) (f uint64) {
 // When an interaction has already been responded to,
 // the response will be edited instead on execution.
 func (c *Ctx) Respond(r *discordgo.InteractionResponse) (err error) {
-	if r.Data != nil {
-		r.Data.Flags = uint64(c.messageFlags(r.Data.Flags))
+	if r.Data == nil {
+		r.Data = new(discordgo.InteractionResponseData)
 	}
+	r.Data.Flags = uint64(c.messageFlags(r.Data.Flags))
 	if c.responded {
 		if r == nil || r.Data == nil {
 			return
