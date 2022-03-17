@@ -60,7 +60,7 @@ type CommandOption struct {
 // ChannelValue is a utility function for casting option value to channel object.
 //
 // The object is taken from the specified state instance.
-func (o *CommandOption) ChannelValue(ctx *Ctx) *discordgo.Channel {
+func (o *CommandOption) ChannelValue(ctx Context) *discordgo.Channel {
 	if o.Type != discordgo.ApplicationCommandOptionChannel {
 		panic("ChannelValue called on data option of type " + o.Type.String())
 	}
@@ -70,7 +70,7 @@ func (o *CommandOption) ChannelValue(ctx *Ctx) *discordgo.Channel {
 		return &discordgo.Channel{ID: chanID}
 	}
 
-	ch, err := ctx.Ken.opt.State.Channel(ctx.Session, chanID)
+	ch, err := ctx.GetKen().opt.State.Channel(ctx.GetSession(), chanID)
 	if err != nil {
 		return &discordgo.Channel{ID: chanID}
 	}
@@ -81,7 +81,7 @@ func (o *CommandOption) ChannelValue(ctx *Ctx) *discordgo.Channel {
 // RoleValue is a utility function for casting option value to role object.
 //
 // The object is taken from the specified state instance.
-func (o *CommandOption) RoleValue(ctx *Ctx) *discordgo.Role {
+func (o *CommandOption) RoleValue(ctx Context) *discordgo.Role {
 	if o.Type != discordgo.ApplicationCommandOptionRole {
 		panic("RoleValue called on data option of type " + o.Type.String())
 	}
@@ -91,7 +91,7 @@ func (o *CommandOption) RoleValue(ctx *Ctx) *discordgo.Role {
 		return &discordgo.Role{ID: roleID}
 	}
 
-	role, err := ctx.Ken.opt.State.Role(ctx.Session, ctx.Event.GuildID, roleID)
+	role, err := ctx.GetKen().opt.State.Role(ctx.GetSession(), ctx.GetEvent().GuildID, roleID)
 	if err != nil {
 		return &discordgo.Role{ID: roleID}
 	}
@@ -102,7 +102,7 @@ func (o *CommandOption) RoleValue(ctx *Ctx) *discordgo.Role {
 // UserValue is a utility function for casting option value to user object.
 //
 // The object is taken from the specified state instance.
-func (o *CommandOption) UserValue(ctx *Ctx) *discordgo.User {
+func (o *CommandOption) UserValue(ctx Context) *discordgo.User {
 	if o.Type != discordgo.ApplicationCommandOptionUser {
 		panic("UserValue called on data option of type " + o.Type.String())
 	}
@@ -112,7 +112,7 @@ func (o *CommandOption) UserValue(ctx *Ctx) *discordgo.User {
 		return &discordgo.User{ID: userID}
 	}
 
-	user, err := ctx.Ken.opt.State.User(ctx.Session, userID)
+	user, err := ctx.GetKen().opt.State.User(ctx.GetSession(), userID)
 	if err != nil {
 		return &discordgo.User{ID: userID}
 	}
