@@ -23,6 +23,7 @@ type Context interface {
 	UserCommand() (cmd UserCommand, ok bool)
 	MessageCommand() (cmd MessageCommand, ok bool)
 	HandleSubCommands(handler ...SubCommandHandler) (err error)
+	GetKen() *Ken
 	GetSession() *discordgo.Session
 	GetEvent() *discordgo.InteractionCreate
 	GetCommand() Command
@@ -305,6 +306,11 @@ func (c *Ctx) HandleSubCommands(handler ...SubCommandHandler) (err error) {
 		break
 	}
 	return
+}
+
+// GetKen returns the root instance of Ken.
+func (c *Ctx) GetKen() *Ken {
+	return c.Ken
 }
 
 // GetSession returns the current Discordgo session instance.
