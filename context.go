@@ -4,6 +4,32 @@ import (
 	"github.com/bwmarrin/discordgo"
 )
 
+// Context defines the implementation of an interaction
+// command context passed to the command handler.
+type Context interface {
+	Respond(r *discordgo.InteractionResponse) (err error)
+	RespondEmbed(emb *discordgo.MessageEmbed) (err error)
+	RespondError(content, title string) (err error)
+	FollowUp(wait bool, data *discordgo.WebhookParams) (fum *FollowUpMessage)
+	FollowUpEmbed(emb *discordgo.MessageEmbed) (fum *FollowUpMessage)
+	FollowUpError(content, title string) (fum *FollowUpMessage)
+	Defer() (err error)
+	Get(key string) (v interface{})
+	Channel() (*discordgo.Channel, error)
+	Guild() (*discordgo.Guild, error)
+	User() (u *discordgo.User)
+	Options() CommandOptions
+	SlashCommand() (cmd SlashCommand, ok bool)
+	UserCommand() (cmd UserCommand, ok bool)
+	MessageCommand() (cmd MessageCommand, ok bool)
+	HandleSubCommands(handler ...SubCommandHandler) (err error)
+	GetSession() *discordgo.Session
+	GetEvent() *discordgo.InteractionCreate
+	GetCommand() Command
+	GetEphemeral() bool
+	SetEphemeral(v bool)
+}
+
 // Ctx holds the invokation context of
 // a command.
 //
@@ -29,6 +55,8 @@ type Ctx struct {
 	// only to the user which invoked the command.
 	Ephemeral bool
 }
+
+var _ Context = (*Ctx)(nil)
 
 func newCtx() *Ctx {
 	return &Ctx{
@@ -243,6 +271,8 @@ type SubCommandCtx struct {
 	SubCommandName string
 }
 
+var _ Context = (*SubCommandCtx)(nil)
+
 // Options returns the options array of the called
 // sub command.
 func (c *SubCommandCtx) Options() CommandOptions {
@@ -275,4 +305,36 @@ func (c *Ctx) HandleSubCommands(handler ...SubCommandHandler) (err error) {
 		break
 	}
 	return
+}
+
+// GetSession returns the current Discordgo session instance.
+func (c *Ctx) GetSession() *discordgo.Session {
+	return c.Session
+}
+
+// GetEvent returns the InteractionCreate event instance which
+// invoked the interaction command.
+func (c *Ctx) GetEvent() *discordgo.InteractionCreate {
+	return c.Event
+}
+
+// GetCommand returns the command instance called.
+func (c *Ctx) GetCommand() Command {
+	return c.Command
+}
+
+// GetEphemeral returns the current emphemeral state
+// of the command invokation.
+func (c *Ctx) GetEphemeral() bool {
+	return c.Ephemeral
+}
+
+// SetEphemeral sets the emphemeral state of the command
+// invokation.
+//
+// Ephemeral can be set to true which will
+// send all subsequent command responses
+// only to the user which invoked the command.
+func (c *Ctx) SetEphemeral(v bool) {
+	c.Ephemeral = v
 }
