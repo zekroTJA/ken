@@ -2,7 +2,7 @@ module github.com/zekrotja/ken
 
 go 1.17
 
-require github.com/bwmarrin/discordgo v0.23.3-0.20220216202327-6015eed9333e
+require github.com/bwmarrin/discordgo v0.25.0
 
 require (
 	github.com/gorilla/websocket v1.4.2 // indirect

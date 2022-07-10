@@ -15,9 +15,8 @@ type FollowUpMessage struct {
 	// error occurrences during method execution.
 	Error error
 
-	self *discordgo.User
-	s    *discordgo.Session
-	i    *discordgo.Interaction
+	s *discordgo.Session
+	i *discordgo.Interaction
 }
 
 // Edit overwrites the given follow up message with the
@@ -28,7 +27,7 @@ func (m *FollowUpMessage) Edit(data *discordgo.WebhookEdit) (err error) {
 		return
 	}
 
-	inter, err := m.s.FollowupMessageEdit(m.self.ID, m.i, m.ID, data)
+	inter, err := m.s.FollowupMessageEdit(m.i, m.ID, data)
 	if err != nil {
 		return
 	}
@@ -53,7 +52,7 @@ func (m *FollowUpMessage) Delete() (err error) {
 		return
 	}
 
-	err = m.s.FollowupMessageDelete(m.self.ID, m.i, m.ID)
+	err = m.s.FollowupMessageDelete(m.i, m.ID)
 	return
 }
 
