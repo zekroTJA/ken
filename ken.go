@@ -298,6 +298,10 @@ func (k *Ken) onReady(s *discordgo.Session, e *discordgo.Ready) {
 }
 
 func (k *Ken) onInteractionCreate(s *discordgo.Session, e *discordgo.InteractionCreate) {
+	if e.Type != discordgo.InteractionApplicationCommand {
+		return
+	}
+
 	k.cmdsLock.RLock()
 	cmd := k.cmds[e.ApplicationCommandData().Name]
 	k.cmdsLock.RUnlock()
