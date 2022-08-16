@@ -4,9 +4,11 @@ import (
 	"github.com/bwmarrin/discordgo"
 )
 
-// Context defines the implementation of an interaction
-// command context passed to the command handler.
-type Context interface {
+// ContextResponder defines the implementation of an
+// interaction context with functionalities to respond
+// to the interaction, to set the ephemeral state and
+// to retrieve the nested session and event.
+type ContextResponder interface {
 	Respond(r *discordgo.InteractionResponse) (err error)
 	RespondEmbed(emb *discordgo.MessageEmbed) (err error)
 	RespondError(content, title string) (err error)
@@ -14,6 +16,17 @@ type Context interface {
 	FollowUpEmbed(emb *discordgo.MessageEmbed) (fum *FollowUpMessage)
 	FollowUpError(content, title string) (fum *FollowUpMessage)
 	Defer() (err error)
+	GetEphemeral() bool
+	SetEphemeral(v bool)
+	GetSession() *discordgo.Session
+	GetEvent() *discordgo.InteractionCreate
+}
+
+// Context defines the implementation of an interaction
+// command context passed to the command handler.
+type Context interface {
+	ContextResponder
+
 	Get(key string) (v interface{})
 	Channel() (*discordgo.Channel, error)
 	Guild() (*discordgo.Guild, error)
@@ -24,21 +37,12 @@ type Context interface {
 	MessageCommand() (cmd MessageCommand, ok bool)
 	HandleSubCommands(handler ...SubCommandHandler) (err error)
 	GetKen() *Ken
-	GetSession() *discordgo.Session
-	GetEvent() *discordgo.InteractionCreate
 	GetCommand() Command
-	GetEphemeral() bool
-	SetEphemeral(v bool)
 }
 
-// Ctx holds the invokation context of
-// a command.
-//
-// The Ctx must not be stored or used
-// after command execution.
-type Ctx struct {
-	ObjectMap
-
+// CtxResponder provides functionailities to respond
+// to an interaction.
+type CtxResponder struct {
 	responded bool
 
 	// Ken keeps a reference to the main Ken instance.
@@ -48,37 +52,20 @@ type Ctx struct {
 	// Event provides the InteractionCreate event
 	// instance.
 	Event *discordgo.InteractionCreate
-	// Command provides the called command instance.
-	Command Command
-
 	// Ephemeral can be set to true which will
 	// send all subsequent command responses
 	// only to the user which invoked the command.
 	Ephemeral bool
 }
 
-var _ Context = (*Ctx)(nil)
-
-func newCtx() *Ctx {
-	return &Ctx{
-		ObjectMap: make(simpleObjectMap),
-	}
-}
-
-func (c *Ctx) messageFlags(p uint64) (f uint64) {
-	f = p
-	if c.Ephemeral {
-		f |= uint64(discordgo.MessageFlagsEphemeral)
-	}
-	return
-}
+var _ ContextResponder = (*CtxResponder)(nil)
 
 // Respond to an interaction event with the given
 // interaction response payload.
 //
 // When an interaction has already been responded to,
 // the response will be edited instead on execution.
-func (c *Ctx) Respond(r *discordgo.InteractionResponse) (err error) {
+func (c *CtxResponder) Respond(r *discordgo.InteractionResponse) (err error) {
 	if r.Data == nil {
 		r.Data = new(discordgo.InteractionResponseData)
 	}
@@ -106,7 +93,7 @@ func (c *Ctx) Respond(r *discordgo.InteractionResponse) (err error) {
 
 // RespondEmbed is shorthand for Respond with an
 // embed payload as passed.
-func (c *Ctx) RespondEmbed(emb *discordgo.MessageEmbed) (err error) {
+func (c *CtxResponder) RespondEmbed(emb *discordgo.MessageEmbed) (err error) {
 	if emb.Color <= 0 {
 		emb.Color = c.Ken.opt.EmbedColors.Default
 	}
@@ -123,7 +110,7 @@ func (c *Ctx) RespondEmbed(emb *discordgo.MessageEmbed) (err error) {
 // RespondError is shorthand for RespondEmbed with an
 // error embed as message with the passed content and
 // title.
-func (c *Ctx) RespondError(content, title string) (err error) {
+func (c *CtxResponder) RespondError(content, title string) (err error) {
 	return c.RespondEmbed(&discordgo.MessageEmbed{
 		Description: content,
 		Title:       title,
@@ -138,11 +125,11 @@ func (c *Ctx) RespondError(content, title string) (err error) {
 //
 // This way it allows to be chained in one call with
 // subsequent FollowUpMessage method calls.
-func (c *Ctx) FollowUp(wait bool, data *discordgo.WebhookParams) (fum *FollowUpMessage) {
+func (c *CtxResponder) FollowUp(wait bool, data *discordgo.WebhookParams) (fum *FollowUpMessage) {
 	data.Flags = uint64(c.messageFlags(data.Flags))
 	fum = &FollowUpMessage{
-		s: c.Session,
-		i: c.Event.Interaction,
+		ken: c.Ken,
+		i:   c.Event.Interaction,
 	}
 	fum.Message, fum.Error = c.Session.FollowupMessageCreate(c.Event.Interaction, wait, data)
 	return
@@ -150,7 +137,7 @@ func (c *Ctx) FollowUp(wait bool, data *discordgo.WebhookParams) (fum *FollowUpM
 
 // FollowUpEmbed is shorthand for FollowUp with an
 // embed payload as passed.
-func (c *Ctx) FollowUpEmbed(emb *discordgo.MessageEmbed) (fum *FollowUpMessage) {
+func (c *CtxResponder) FollowUpEmbed(emb *discordgo.MessageEmbed) (fum *FollowUpMessage) {
 	if emb.Color <= 0 {
 		emb.Color = c.Ken.opt.EmbedColors.Default
 	}
@@ -164,7 +151,7 @@ func (c *Ctx) FollowUpEmbed(emb *discordgo.MessageEmbed) (fum *FollowUpMessage) 
 // FollowUpError is shorthand for FollowUpEmbed with an
 // error embed as message with the passed content and
 // title.
-func (c *Ctx) FollowUpError(content, title string) (fum *FollowUpMessage) {
+func (c *CtxResponder) FollowUpError(content, title string) (fum *FollowUpMessage) {
 	return c.FollowUpEmbed(&discordgo.MessageEmbed{
 		Description: content,
 		Title:       title,
@@ -177,11 +164,67 @@ func (c *Ctx) FollowUpError(content, title string) (fum *FollowUpMessage) {
 //
 // It should be used when the interaction response can not be
 // instantly returned.
-func (c *Ctx) Defer() (err error) {
+func (c *CtxResponder) Defer() (err error) {
 	err = c.Respond(&discordgo.InteractionResponse{
 		Type: discordgo.InteractionResponseDeferredChannelMessageWithSource,
 	})
 	return
+}
+
+// GetEphemeral returns the current emphemeral state
+// of the command invokation.
+func (c *CtxResponder) GetEphemeral() bool {
+	return c.Ephemeral
+}
+
+// SetEphemeral sets the emphemeral state of the command
+// invokation.
+//
+// Ephemeral can be set to true which will
+// send all subsequent command responses
+// only to the user which invoked the command.
+func (c *CtxResponder) SetEphemeral(v bool) {
+	c.Ephemeral = v
+}
+
+// GetSession returns the current Discordgo session instance.
+func (c *CtxResponder) GetSession() *discordgo.Session {
+	return c.Session
+}
+
+// GetEvent returns the InteractionCreate event instance which
+// invoked the interaction command.
+func (c *CtxResponder) GetEvent() *discordgo.InteractionCreate {
+	return c.Event
+}
+
+func (c *CtxResponder) messageFlags(p uint64) (f uint64) {
+	f = p
+	if c.Ephemeral {
+		f |= uint64(discordgo.MessageFlagsEphemeral)
+	}
+	return
+}
+
+// Ctx holds the invokation context of
+// a command.
+//
+// The Ctx must not be stored or used
+// after command execution.
+type Ctx struct {
+	ObjectMap
+	CtxResponder
+
+	// Command provides the called command instance.
+	Command Command
+}
+
+var _ Context = (*Ctx)(nil)
+
+func newCtx() *Ctx {
+	return &Ctx{
+		ObjectMap: make(simpleObjectMap),
+	}
 }
 
 // Get either returns an instance from the internal object map -
@@ -305,34 +348,25 @@ func (c *Ctx) GetKen() *Ken {
 	return c.Ken
 }
 
-// GetSession returns the current Discordgo session instance.
-func (c *Ctx) GetSession() *discordgo.Session {
-	return c.Session
-}
-
-// GetEvent returns the InteractionCreate event instance which
-// invoked the interaction command.
-func (c *Ctx) GetEvent() *discordgo.InteractionCreate {
-	return c.Event
-}
-
 // GetCommand returns the command instance called.
 func (c *Ctx) GetCommand() Command {
 	return c.Command
 }
 
-// GetEphemeral returns the current emphemeral state
-// of the command invokation.
-func (c *Ctx) GetEphemeral() bool {
-	return c.Ephemeral
+type ComponentContext interface {
+	ContextResponder
+
+	GetData() discordgo.MessageComponentInteractionData
 }
 
-// SetEphemeral sets the emphemeral state of the command
-// invokation.
-//
-// Ephemeral can be set to true which will
-// send all subsequent command responses
-// only to the user which invoked the command.
-func (c *Ctx) SetEphemeral(v bool) {
-	c.Ephemeral = v
+type ComponentCtx struct {
+	CtxResponder
+
+	Data discordgo.MessageComponentInteractionData
+}
+
+var _ ComponentContext = (*ComponentCtx)(nil)
+
+func (c *ComponentCtx) GetData() discordgo.MessageComponentInteractionData {
+	return c.Data
 }

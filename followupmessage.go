@@ -15,8 +15,8 @@ type FollowUpMessage struct {
 	// error occurrences during method execution.
 	Error error
 
-	s *discordgo.Session
-	i *discordgo.Interaction
+	ken *Ken
+	i   *discordgo.Interaction
 }
 
 // Edit overwrites the given follow up message with the
@@ -27,7 +27,7 @@ func (m *FollowUpMessage) Edit(data *discordgo.WebhookEdit) (err error) {
 		return
 	}
 
-	inter, err := m.s.FollowupMessageEdit(m.i, m.ID, data)
+	inter, err := m.ken.s.FollowupMessageEdit(m.i, m.ID, data)
 	if err != nil {
 		return
 	}
@@ -52,7 +52,7 @@ func (m *FollowUpMessage) Delete() (err error) {
 		return
 	}
 
-	err = m.s.FollowupMessageDelete(m.i, m.ID)
+	err = m.ken.s.FollowupMessageDelete(m.i, m.ID)
 	return
 }
 
@@ -64,4 +64,16 @@ func (m *FollowUpMessage) DeleteAfter(d time.Duration) *FollowUpMessage {
 		m.Delete()
 	}()
 	return m
+}
+
+// HasError returns true if the value of Error
+// is not nil.
+func (m *FollowUpMessage) HasError() bool {
+	return m.Error != nil
+}
+
+// AddComponents returns a new component builder to add
+// message components with handlers to the FollowUpMessage.
+func (m *FollowUpMessage) AddComponents() *ComponentBuilder {
+	return m.ken.Components().Add(m.ID, m.ChannelID)
 }

@@ -57,12 +57,13 @@ type Ken struct {
 	s   *discordgo.Session
 	opt *Options
 
-	cmdsLock     sync.RWMutex
-	cmds         map[string]Command
-	idcache      map[string]string
-	cmdInfoCache CommandInfoList
-	ctxPool      sync.Pool
-	subCtxPool   sync.Pool
+	cmdsLock         sync.RWMutex
+	cmds             map[string]Command
+	idcache          map[string]string
+	cmdInfoCache     CommandInfoList
+	ctxPool          sync.Pool
+	subCtxPool       sync.Pool
+	componentHandler *ComponentHandler
 
 	mwBefore []MiddlewareBefore
 	mwAfter  []MiddlewareAfter
@@ -107,6 +108,8 @@ func New(s *discordgo.Session, options ...Options) (k *Ken, err error) {
 		mwBefore: make([]MiddlewareBefore, 0),
 		mwAfter:  make([]MiddlewareAfter, 0),
 	}
+
+	k.componentHandler = NewComponentHandler(k)
 
 	k.opt = &defaultOptions
 	if len(options) > 0 {
@@ -214,6 +217,13 @@ func (k *Ken) Unregister() (err error) {
 	}
 	return
 }
+
+// Components returns the component handler.
+func (k *Ken) Components() *ComponentHandler {
+	return k.componentHandler
+}
+
+// --- Internal API ---
 
 func (k *Ken) registerCommand(cmd Command) (err error) {
 	if cmd.Name() == "" {
