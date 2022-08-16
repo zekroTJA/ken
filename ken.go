@@ -269,11 +269,16 @@ func (k *Ken) onReady(s *discordgo.Session, e *discordgo.Ready) {
 	)
 
 	for name, cmd := range k.cmds {
+		guildId := ""
+		if gsc, ok := cmd.(GuildScopedCommand); ok {
+			guildId = gsc.Guild()
+		}
+
 		if _, ok := k.idcache[name]; ok {
 			acmd := toApplicationCommand(cmd)
 			update = append(update, acmd)
 		} else {
-			ccmd, err = s.ApplicationCommandCreate(e.User.ID, "", toApplicationCommand(cmd))
+			ccmd, err = s.ApplicationCommandCreate(e.User.ID, guildId, toApplicationCommand(cmd))
 			if err != nil {
 				k.opt.OnSystemError("command registration", err)
 			} else {

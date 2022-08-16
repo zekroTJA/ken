@@ -30,6 +30,15 @@ type Command interface {
 	Run(ctx *Ctx) (err error)
 }
 
+// GuildScopedCommand can be implemented by your
+// commands to scope them to specific guilds.
+//
+// The command then will be only registered on
+// the guild returned by the Guild method.
+type GuildScopedCommand interface {
+	Guild() string
+}
+
 func toApplicationCommand(c Command) *discordgo.ApplicationCommand {
 	switch cm := c.(type) {
 	case UserCommand:
