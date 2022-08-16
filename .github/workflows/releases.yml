@@ -1,0 +1,27 @@
+name: Releases CD
+
+on:
+  workflow_dispatch:
+  push:
+    tags:
+      - '*'
+
+jobs:
+  deploy:
+    name: Deploy to Releases
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+      - name: Inject Version into Changelog
+        run: |-
+          sed -i "s/\[VERSION\]/$(git describe --tags --abbrev=0)/g" CHANGELOG.md
+      - name: Set up Hub
+        run: |-
+          sudo snap install hub --classic
+      - name: Deploy to Releases
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: "hub release create
+          -F ./CHANGELOG.md
+          $(git describe --tags --abbrev=0)"
