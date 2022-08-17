@@ -151,10 +151,14 @@ func (t *ComponentBuilder) AddActionsRow(build func(b ComponentAssembler), once 
 // Build attaches the registered messgae components to
 // the specified message and registers the interaction
 // handlers to the handler registry.
-func (t *ComponentBuilder) Build() error {
-	err := t.ch.AppendToMessage(t.msgId, t.chanId, t.components)
+//
+// It returns an unregister function which can be called
+// to remove all message components appendet and and all
+// interaction handler registered with this builder.
+func (t *ComponentBuilder) Build() (unreg func() error, err error) {
+	err = t.ch.AppendToMessage(t.msgId, t.chanId, t.components)
 	if err != nil {
-		return err
+		return unreg, err
 	}
 
 	t.ch.mtx.Lock()
@@ -170,9 +174,11 @@ func (t *ComponentBuilder) Build() error {
 					Channel:    t.chanId,
 					Components: t.components,
 				})
+				kRems := make([]string, 0, len(handler.onceGroup))
 				for _, kRem := range handler.onceGroup {
-					t.ch.Unregister(kRem)
+					kRems = append(kRems, kRem)
 				}
+				t.ch.Unregister(kRems...)
 			}
 		} else if handler.once {
 			k := key // copy key for anonymous function
@@ -193,7 +199,24 @@ func (t *ComponentBuilder) Build() error {
 		}
 	}
 
-	return nil
+	unreg = func() error {
+		_, err := t.ch.ken.s.ChannelMessageEditComplex(&discordgo.MessageEdit{
+			ID:         t.msgId,
+			Channel:    t.chanId,
+			Components: []discordgo.MessageComponent{},
+		})
+		if err != nil {
+			return err
+		}
+		keys := make([]string, 0, len(t.handlers))
+		for key := range t.handlers {
+			keys = append(keys, key)
+		}
+		t.ch.Unregister(keys...)
+		return nil
+	}
+
+	return unreg, nil
 }
 
 func getCustomId(component discordgo.MessageComponent) string {
