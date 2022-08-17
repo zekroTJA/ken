@@ -11,7 +11,7 @@ import (
 // passed a ComponentContext which contians the
 // interaction event data and can be used to respond
 // to the interaction.
-type ComponentHandlerFunc func(ctx ComponentContext)
+type ComponentHandlerFunc func(ctx ComponentContext) bool
 
 // ComponentHandler keeps a registry of component handler
 // callbacks to be executed when a given component has

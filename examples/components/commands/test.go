@@ -66,19 +66,21 @@ func (c *TestCommand) Run(ctx *ken.Ctx) (err error) {
 			b.Add(discordgo.Button{
 				CustomID: "button-1",
 				Label:    "Absolutely fantastic!",
-			}, func(ctx ken.ComponentContext) {
+			}, func(ctx ken.ComponentContext) bool {
 				ctx.RespondEmbed(&discordgo.MessageEmbed{
 					Description: fmt.Sprintf("Responded to %s", ctx.GetData().CustomID),
 				})
+				return true
 			}, !clearAll)
 			b.Add(discordgo.Button{
 				CustomID: "button-2",
 				Style:    discordgo.DangerButton,
 				Label:    "Not so well",
-			}, func(ctx ken.ComponentContext) {
+			}, func(ctx ken.ComponentContext) bool {
 				ctx.RespondEmbed(&discordgo.MessageEmbed{
 					Description: fmt.Sprintf("Responded to %s", ctx.GetData().CustomID),
 				})
+				return true
 			}, !clearAll)
 		}, clearAll).
 		Build()

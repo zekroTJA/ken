@@ -166,8 +166,11 @@ func (t *ComponentBuilder) Build() (unreg func() error, err error) {
 
 	for key, handler := range t.handlers {
 		if len(handler.onceGroup) > 0 {
-			t.ch.handlers[key] = func(ctx ComponentContext) {
-				handler.handler(ctx)
+			t.ch.handlers[key] = func(ctx ComponentContext) bool {
+				if !handler.handler(ctx) {
+					return false
+				}
+
 				t.components = []discordgo.MessageComponent{}
 				t.ch.ken.s.ChannelMessageEditComplex(&discordgo.MessageEdit{
 					ID:         t.msgId,
@@ -179,11 +182,14 @@ func (t *ComponentBuilder) Build() (unreg func() error, err error) {
 					kRems = append(kRems, kRem)
 				}
 				t.ch.Unregister(kRems...)
+				return true
 			}
 		} else if handler.once {
 			k := key // copy key for anonymous function
-			t.ch.handlers[key] = func(ctx ComponentContext) {
-				handler.handler(ctx)
+			t.ch.handlers[key] = func(ctx ComponentContext) bool {
+				if !handler.handler(ctx) {
+					return false
+				}
 
 				t.components = removeComponentRecursive(t.components, k)
 				t.ch.ken.s.ChannelMessageEditComplex(&discordgo.MessageEdit{
@@ -193,6 +199,7 @@ func (t *ComponentBuilder) Build() (unreg func() error, err error) {
 				})
 
 				t.ch.Unregister(k)
+				return true
 			}
 		} else {
 			t.ch.handlers[key] = handler.handler
