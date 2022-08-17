@@ -71,12 +71,18 @@ func (t *ComponentHandler) Register(customId string, handler ComponentHandlerFun
 	}
 }
 
-// Unregister removes a handler from the registry set to
-// the given customId of the message component.
-func (t *ComponentHandler) Unregister(customId string) {
+// Unregister removes one or more handlers from the
+// registry set to the given customId(s) of the
+// message component(s).
+func (t *ComponentHandler) Unregister(customId ...string) {
+	if len(customId) == 0 {
+		return
+	}
 	t.mtx.Lock()
 	defer t.mtx.Unlock()
-	delete(t.handlers, customId)
+	for _, id := range customId {
+		delete(t.handlers, id)
+	}
 }
 
 // AppendToMessage edits the given message by messageId and
