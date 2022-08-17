@@ -61,7 +61,7 @@ func (c *TestCommand) Run(ctx *ken.Ctx) (err error) {
 		return fum.Error
 	}
 
-	err = fum.AddComponents().
+	_, err = fum.AddComponents().
 		AddActionsRow(func(b ken.ComponentAssembler) {
 			b.Add(discordgo.Button{
 				CustomID: "button-1",
