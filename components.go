@@ -11,6 +11,9 @@ import (
 // passed a ComponentContext which contians the
 // interaction event data and can be used to respond
 // to the interaction.
+//
+// A boolean is returned to indicate the success of
+// the execution of the handler.
 type ComponentHandlerFunc func(ctx ComponentContext) bool
 
 // ComponentHandler keeps a registry of component handler
