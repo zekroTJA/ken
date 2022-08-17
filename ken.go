@@ -223,6 +223,11 @@ func (k *Ken) Components() *ComponentHandler {
 	return k.componentHandler
 }
 
+// Session returns the internal Discordgo session.
+func (k *Ken) Session() *discordgo.Session {
+	return k.s
+}
+
 // --- Internal API ---
 
 func (k *Ken) registerCommand(cmd Command) (err error) {
