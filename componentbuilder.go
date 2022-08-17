@@ -164,7 +164,8 @@ func (t *ComponentBuilder) Build() (unreg func() error, err error) {
 	t.ch.mtx.Lock()
 	defer t.ch.mtx.Unlock()
 
-	for key, handler := range t.handlers {
+	for key := range t.handlers {
+		handler := t.handlers[key]
 		if len(handler.onceGroup) > 0 {
 			t.ch.handlers[key] = func(ctx ComponentContext) bool {
 				if !handler.handler(ctx) {
