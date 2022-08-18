@@ -41,7 +41,7 @@ func (m *FollowUpMessage) Edit(data *discordgo.WebhookEdit) (err error) {
 // WebhookEdit data.
 func (m *FollowUpMessage) EditEmbed(emb *discordgo.MessageEmbed) (err error) {
 	return m.Edit(&discordgo.WebhookEdit{
-		Embeds: []*discordgo.MessageEmbed{emb},
+		Embeds: &[]*discordgo.MessageEmbed{emb},
 	})
 }
 

@@ -69,15 +69,15 @@ func (c *CtxResponder) Respond(r *discordgo.InteractionResponse) (err error) {
 	if r.Data == nil {
 		r.Data = new(discordgo.InteractionResponseData)
 	}
-	r.Data.Flags = uint64(c.messageFlags(r.Data.Flags))
+	r.Data.Flags = c.messageFlags(r.Data.Flags)
 	if c.responded {
 		if r == nil || r.Data == nil {
 			return
 		}
 		_, err = c.Session.InteractionResponseEdit(c.Event.Interaction, &discordgo.WebhookEdit{
-			Content:         r.Data.Content,
-			Embeds:          r.Data.Embeds,
-			Components:      r.Data.Components,
+			Content:         &r.Data.Content,
+			Embeds:          &r.Data.Embeds,
+			Components:      &r.Data.Components,
 			Files:           r.Data.Files,
 			AllowedMentions: r.Data.AllowedMentions,
 		})
@@ -126,7 +126,7 @@ func (c *CtxResponder) RespondError(content, title string) (err error) {
 // This way it allows to be chained in one call with
 // subsequent FollowUpMessage method calls.
 func (c *CtxResponder) FollowUp(wait bool, data *discordgo.WebhookParams) (fum *FollowUpMessage) {
-	data.Flags = uint64(c.messageFlags(data.Flags))
+	data.Flags = c.messageFlags(data.Flags)
 	fum = &FollowUpMessage{
 		ken: c.Ken,
 		i:   c.Event.Interaction,
@@ -198,10 +198,10 @@ func (c *CtxResponder) GetEvent() *discordgo.InteractionCreate {
 	return c.Event
 }
 
-func (c *CtxResponder) messageFlags(p uint64) (f uint64) {
+func (c *CtxResponder) messageFlags(p discordgo.MessageFlags) (f discordgo.MessageFlags) {
 	f = p
 	if c.Ephemeral {
-		f |= uint64(discordgo.MessageFlagsEphemeral)
+		f |= discordgo.MessageFlagsEphemeral
 	}
 	return
 }
