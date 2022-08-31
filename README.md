@@ -20,11 +20,18 @@ This package was primarily written with the motivation to use it in my Discord b
 
 ## Why should you use this package?
 
-It may sound crazy, but `ken` tries to simplify the complexity behind application command registration and command handling while giving you full control over the event handling and registration process.
+It may sound crazy, but `ken` tries to simplify the complexity behind application command and message component handling while giving you full control over the event handling and registration process.
 
 Also, ken provides a higly modular middleware pipeline to control who can use commands and how they should be handled.
 
-### High modularity due to OOP
+Things you can do with `ken`:
+- Register and handle [Slash Commands](examples/basic).
+- Register and handle [User Commands](example/usermsgcommands).
+- Register and handle [Message Commands](example/usermsgcommands).
+- Attach and handle [Message Components](example/components).
+- Open and handle [Modals](example/modals).
+
+### High modularity
 
 The command-registration and middleware system is built so that you can add whatever functionality you want to your command structure and handle it all in your middleware which can be called before and/or after command execution. The only thing required is that your commands implements one of the provided command interfaes:
 - [`SlashCommand`](slashcommand.go)
@@ -39,7 +46,7 @@ Via options you can also specify a custom state handler, if you are using someth
 
 ### Quality of Life Implementations
 
-`ken` passes a single [`Ctx`](https://pkg.go.dev/github.com/zekrotja/ken#Ctx) object to the command handlers which contains everything you need. It allows you to access raw `discordgo.InteractionCreate` event data, the `Command` instance which has been called, the `discordgo.Session`, as well as many utility functions.
+`ken` passes a single [`Context`](https://pkg.go.dev/github.com/zekrotja/ken#Context) object to the command handlers which contains everything you need. It allows you to access raw `discordgo.InteractionCreate` event data, the `Command` instance which has been called, the `discordgo.Session`, as well as many utility functions.
 
 For example, you can easily respond to the event by using the [`Respond`](https://pkg.go.dev/github.com/zekrotja/ken#Ctx.Respond) method to send a response to an interaction. [`Defer`](https://pkg.go.dev/github.com/zekrotja/ken#Ctx.Defer) does the same but sends a `defer` response so you can send follow-up messages afterwards with a delay.
 
@@ -153,5 +160,5 @@ If you are not familiar with regex, the name must match the following conditions
 
 ---
 
-© 2021 Ringo Hoffmann (zekro Development).  
+© 2022 Ringo Hoffmann (zekro Development).  
 Covered by the MIT Licence.
