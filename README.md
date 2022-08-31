@@ -80,7 +80,7 @@ func (c *TestCommand) Options() []*discordgo.ApplicationCommandOption {
 	return []*discordgo.ApplicationCommandOption{}
 }
 
-func (c *TestCommand) Run(ctx *ken.Ctx) (err error) {
+func (c *TestCommand) Run(ctx ken.Context) (err error) {
 	err = ctx.Respond(&discordgo.InteractionResponse{
 		Type: discordgo.InteractionResponseChannelMessageWithSource,
 		Data: &discordgo.InteractionResponseData{

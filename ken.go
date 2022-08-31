@@ -102,7 +102,7 @@ func New(s *discordgo.Session, options ...Options) (k *Ken, err error) {
 		},
 		subCtxPool: sync.Pool{
 			New: func() interface{} {
-				return &SubCommandCtx{}
+				return &subCommandCtx{}
 			},
 		},
 		mwBefore: make([]MiddlewareBefore, 0),
@@ -340,14 +340,14 @@ func (k *Ken) onInteractionCreate(s *discordgo.Session, e *discordgo.Interaction
 	defer k.ctxPool.Put(ctx)
 	ctx.Purge()
 	ctx.responded = false
-	ctx.Ken = k
-	ctx.Session = s
-	ctx.Event = e
+	ctx.ken = k
+	ctx.session = s
+	ctx.event = e
 	ctx.Command = cmd
-	ctx.Ephemeral = false
+	ctx.ephemeral = false
 
 	if rpCmd, ok := cmd.(ResponsePolicyCommand); ok {
-		ctx.Ephemeral = rpCmd.ResponsePolicy().Ephemeral
+		ctx.ephemeral = rpCmd.ResponsePolicy().Ephemeral
 	}
 
 	if ch.Type == discordgo.ChannelTypeDM || ch.Type == discordgo.ChannelTypeGroupDM {

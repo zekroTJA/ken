@@ -7,7 +7,7 @@ import (
 
 	"github.com/bwmarrin/discordgo"
 	"github.com/zekrotja/ken"
-	"github.com/zekrotja/ken/examples/components/commands"
+	"github.com/zekrotja/ken/examples/modals/commands"
 	"github.com/zekrotja/ken/store"
 )
 
@@ -32,7 +32,7 @@ func main() {
 	must(err)
 
 	must(k.RegisterCommands(
-		new(commands.TestCommand),
+		new(commands.ModalCommand),
 	))
 
 	defer k.Unregister()

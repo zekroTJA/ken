@@ -1,9 +1,8 @@
 package ken
 
 import (
-	"reflect"
-
 	"github.com/bwmarrin/discordgo"
+	"github.com/zekrotja/ken/util"
 )
 
 // ComponentAssembler helps to build the message
@@ -228,15 +227,8 @@ func (t *ComponentBuilder) Build() (unreg func() error, err error) {
 }
 
 func getCustomId(component discordgo.MessageComponent) string {
-	componentValue := reflect.ValueOf(component)
-	customIdValue := componentValue.FieldByName("CustomID")
-
-	var customId string
-	if customIdValue.IsValid() {
-		customId = customIdValue.String()
-	}
-
-	return customId
+	val, _ := util.GetFieldValue(component, "CustomID")
+	return val
 }
 
 func removeComponentRecursive(components []discordgo.MessageComponent, customKey string) []discordgo.MessageComponent {

@@ -52,7 +52,7 @@ func (c *KickCommand) RequiresRole() string {
 	return "Admin"
 }
 
-func (c *KickCommand) Run(ctx *ken.Ctx) (err error) {
+func (c *KickCommand) Run(ctx ken.Context) (err error) {
 	if err = ctx.Defer(); err != nil {
 		return
 	}
@@ -60,7 +60,7 @@ func (c *KickCommand) Run(ctx *ken.Ctx) (err error) {
 	user := ctx.Options().GetByName("member").UserValue(ctx)
 	reason := ctx.Options().GetByName("reason").StringValue()
 
-	if err = ctx.Session.GuildMemberDeleteWithReason(ctx.Event.GuildID, user.ID, reason); err != nil {
+	if err = ctx.GetSession().GuildMemberDeleteWithReason(ctx.GetEvent().GuildID, user.ID, reason); err != nil {
 		return
 	}
 

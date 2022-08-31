@@ -33,13 +33,13 @@ func (c *PermissionsMiddleware) Before(ctx *ken.Ctx) (next bool, err error) {
 		return
 	}
 
-	guildRoles, err := ctx.Session.GuildRoles(ctx.Event.GuildID)
+	guildRoles, err := ctx.GetSession().GuildRoles(ctx.GetEvent().GuildID)
 	if err != nil {
 		return
 	}
 
 roleLoop:
-	for _, rid := range ctx.Event.Member.Roles {
+	for _, rid := range ctx.GetEvent().Member.Roles {
 		for _, r := range guildRoles {
 			if rid == r.ID && r.Name == cmd.RequiresRole() {
 				next = true

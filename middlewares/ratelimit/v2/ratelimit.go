@@ -59,7 +59,7 @@ func (m *Middleware) Before(ctx *ken.Ctx) (next bool, err error) {
 		if ch.Type == discordgo.ChannelTypeDM || ch.Type == discordgo.ChannelTypeGroupDM {
 			guildID = "__dm__"
 		} else {
-			guildID = ctx.Event.GuildID
+			guildID = ctx.GetEvent().GuildID
 		}
 	}
 

@@ -21,13 +21,13 @@ func (c *DeleteMessageCommand) Description() string {
 	return "Delete the selected message"
 }
 
-func (c *DeleteMessageCommand) Run(ctx *ken.Ctx) (err error) {
+func (c *DeleteMessageCommand) Run(ctx ken.Context) (err error) {
 	var msg *discordgo.Message
-	for _, msg = range ctx.Event.ApplicationCommandData().Resolved.Messages {
+	for _, msg = range ctx.GetEvent().ApplicationCommandData().Resolved.Messages {
 		break
 	}
 
-	if err = ctx.Session.ChannelMessageDelete(msg.ChannelID, msg.ID); err != nil {
+	if err = ctx.GetSession().ChannelMessageDelete(msg.ChannelID, msg.ID); err != nil {
 		return
 	}
 

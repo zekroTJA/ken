@@ -65,7 +65,7 @@ func (c *SubsCommand) IsDmCapable() bool {
 	return true
 }
 
-func (c *SubsCommand) Run(ctx *ken.Ctx) (err error) {
+func (c *SubsCommand) Run(ctx ken.Context) (err error) {
 	err = ctx.HandleSubCommands(
 		ken.SubCommandHandler{"one", c.one},
 		ken.SubCommandHandler{"two", c.two},
@@ -74,7 +74,7 @@ func (c *SubsCommand) Run(ctx *ken.Ctx) (err error) {
 	return
 }
 
-func (c *SubsCommand) one(ctx *ken.SubCommandCtx) (err error) {
+func (c *SubsCommand) one(ctx ken.SubCommandContext) (err error) {
 	if err = ctx.Defer(); err != nil {
 		return
 	}
@@ -85,7 +85,7 @@ func (c *SubsCommand) one(ctx *ken.SubCommandCtx) (err error) {
 	return
 }
 
-func (c *SubsCommand) two(ctx *ken.SubCommandCtx) (err error) {
+func (c *SubsCommand) two(ctx ken.SubCommandContext) (err error) {
 	var arg int
 	if argV, ok := ctx.Options().GetByNameOptional("arg"); ok {
 		arg = int(argV.IntValue())

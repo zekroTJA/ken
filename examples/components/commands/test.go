@@ -44,7 +44,7 @@ func (c *TestCommand) IsDmCapable() bool {
 	return true
 }
 
-func (c *TestCommand) Run(ctx *ken.Ctx) (err error) {
+func (c *TestCommand) Run(ctx ken.Context) (err error) {
 	if err = ctx.Defer(); err != nil {
 		return
 	}
