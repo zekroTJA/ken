@@ -49,7 +49,7 @@ func (c *TestCommand) IsDmCapable() bool {
 	return true
 }
 
-func (C *TestCommand) Help(ctx *ken.SubCommandCtx) (emb *discordgo.MessageEmbed, err error) {
+func (C *TestCommand) Help(ctx ken.SubCommandContext) (emb *discordgo.MessageEmbed, err error) {
 	emb = &discordgo.MessageEmbed{
 		Color:       0x00ff00,
 		Description: "This is a help message that describes how to use this command!",
@@ -65,7 +65,7 @@ func (c *TestCommand) Run(ctx ken.Context) (err error) {
 	return
 }
 
-func (c *TestCommand) pog(ctx *ken.SubCommandCtx) (err error) {
+func (c *TestCommand) pog(ctx ken.SubCommandContext) (err error) {
 	return ctx.Respond(&discordgo.InteractionResponse{
 		Type: discordgo.InteractionResponseChannelMessageWithSource,
 		Data: &discordgo.InteractionResponseData{

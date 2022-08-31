@@ -10,8 +10,8 @@ import (
 type ModalCommand struct{}
 
 var (
-	_ ken.SlashCommand = (*TestCommand)(nil)
-	_ ken.DmCapable    = (*TestCommand)(nil)
+	_ ken.SlashCommand = (*ModalCommand)(nil)
+	_ ken.DmCapable    = (*ModalCommand)(nil)
 )
 
 func (c *ModalCommand) Name() string {

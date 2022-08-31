@@ -331,28 +331,40 @@ func (c *Ctx) MessageCommand() (cmd MessageCommand, ok bool) {
 // to handle sub command calls.
 type SubCommandHandler struct {
 	Name string
-	Run  func(ctx *SubCommandCtx) error
+	Run  func(ctx SubCommandContext) error
 }
 
-// SubCommandCtx wraps the current command Ctx and
-// with the called sub command name and scopes the
-// command options to the options of the called
-// sub command.
+// SubCommandContext wraps the current command
+// Context and with the called sub command name
+// and scopes the command options to the
+// options of the called sub command.
 //
 // The SubCommandCtx must not be stored or used
 // after command execution.
-type SubCommandCtx struct {
-	*Ctx
+type SubCommandContext interface {
+	Context
 
-	SubCommandName string
+	// GetSubCommandName returns the sub command
+	// name which has been invoked.
+	GetSubCommandName() string
 }
 
-var _ Context = (*SubCommandCtx)(nil)
+type subCommandCtx struct {
+	*Ctx
+
+	subCommandName string
+}
+
+var _ SubCommandContext = (*subCommandCtx)(nil)
 
 // Options returns the options array of the called
 // sub command.
-func (c *SubCommandCtx) Options() CommandOptions {
-	return c.Ctx.Options().GetByName(c.SubCommandName).Options
+func (c *subCommandCtx) Options() CommandOptions {
+	return c.Ctx.Options().GetByName(c.subCommandName).Options
+}
+
+func (c *subCommandCtx) GetSubCommandName() string {
+	return c.subCommandName
 }
 
 // HandleSubCommands takes a list of sub command handles.
@@ -373,9 +385,9 @@ func (c *Ctx) HandleSubCommands(handler ...SubCommandHandler) (err error) {
 			continue
 		}
 
-		ctx := c.ken.subCtxPool.Get().(*SubCommandCtx)
+		ctx := c.ken.subCtxPool.Get().(*subCommandCtx)
 		ctx.Ctx = c
-		ctx.SubCommandName = h.Name
+		ctx.subCommandName = h.Name
 		err = h.Run(ctx)
 		c.ken.subCtxPool.Put(ctx)
 		break

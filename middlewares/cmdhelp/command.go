@@ -8,5 +8,5 @@ import (
 // HelpProvider defines a command which provides
 // help content.
 type HelpProvider interface {
-	Help(ctx *ken.SubCommandCtx) (emb *discordgo.MessageEmbed, err error)
+	Help(ctx ken.SubCommandContext) (emb *discordgo.MessageEmbed, err error)
 }

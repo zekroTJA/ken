@@ -102,7 +102,7 @@ func New(s *discordgo.Session, options ...Options) (k *Ken, err error) {
 		},
 		subCtxPool: sync.Pool{
 			New: func() interface{} {
-				return &SubCommandCtx{}
+				return &subCommandCtx{}
 			},
 		},
 		mwBefore: make([]MiddlewareBefore, 0),

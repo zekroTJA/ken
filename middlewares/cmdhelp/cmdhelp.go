@@ -52,7 +52,7 @@ func (m *Middleware) Before(ctx *ken.Ctx) (next bool, err error) {
 func (m *Middleware) subCmdHandler(cmd HelpProvider, executed chan<- bool) ken.SubCommandHandler {
 	return ken.SubCommandHandler{
 		Name: m.subCommandName,
-		Run: func(ctx *ken.SubCommandCtx) (err error) {
+		Run: func(ctx ken.SubCommandContext) (err error) {
 			executed <- true
 			emb, err := cmd.Help(ctx)
 			if err != nil {
