@@ -10,6 +10,14 @@ type MessageComponent struct {
 }
 
 func (t MessageComponent) GetValue() string {
+	if t.MessageComponent == nil {
+		return ""
+	}
+
 	val, _ := util.GetFieldValue(t.MessageComponent, "Value")
 	return val
+}
+
+func (t MessageComponent) IsEmpty() bool {
+	return t.MessageComponent == nil
 }

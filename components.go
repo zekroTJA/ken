@@ -45,12 +45,12 @@ func NewComponentHandler(ken *Ken) *ComponentHandler {
 	t.unregisterFunc = t.ken.s.AddHandler(t.handle)
 	t.ctxPool = sync.Pool{
 		New: func() interface{} {
-			return &ComponentCtx{}
+			return &componentCtx{}
 		},
 	}
 	t.modalCtxPool = sync.Pool{
 		New: func() interface{} {
-			return &ModalCtx{}
+			return &modalCtx{}
 		},
 	}
 
@@ -167,12 +167,12 @@ func (t *ComponentHandler) handleMessageComponent(e *discordgo.InteractionCreate
 		return
 	}
 
-	ctx := t.ctxPool.Get().(*ComponentCtx)
+	ctx := t.ctxPool.Get().(*componentCtx)
 	ctx.Data = data
-	ctx.Ephemeral = false
-	ctx.Event = e
-	ctx.Session = t.ken.s
-	ctx.Ken = t.ken
+	ctx.ephemeral = false
+	ctx.event = e
+	ctx.session = t.ken.s
+	ctx.ken = t.ken
 	ctx.responded = false
 
 	defer func() {
@@ -193,12 +193,12 @@ func (t *ComponentHandler) handleModalSubmit(e *discordgo.InteractionCreate) {
 		return
 	}
 
-	ctx := t.modalCtxPool.Get().(*ModalCtx)
+	ctx := t.modalCtxPool.Get().(*modalCtx)
 	ctx.Data = data
-	ctx.Ephemeral = false
-	ctx.Event = e
-	ctx.Session = t.ken.s
-	ctx.Ken = t.ken
+	ctx.ephemeral = false
+	ctx.event = e
+	ctx.session = t.ken.s
+	ctx.ken = t.ken
 	ctx.responded = false
 
 	defer func() {

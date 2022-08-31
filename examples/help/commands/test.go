@@ -57,7 +57,7 @@ func (C *TestCommand) Help(ctx *ken.SubCommandCtx) (emb *discordgo.MessageEmbed,
 	return
 }
 
-func (c *TestCommand) Run(ctx *ken.Ctx) (err error) {
+func (c *TestCommand) Run(ctx ken.Context) (err error) {
 	err = ctx.HandleSubCommands(
 		ken.SubCommandHandler{"pog", c.pog},
 	)

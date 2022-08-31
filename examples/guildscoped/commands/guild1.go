@@ -36,7 +36,7 @@ func (c *Guild1Command) Options() []*discordgo.ApplicationCommandOption {
 	return []*discordgo.ApplicationCommandOption{}
 }
 
-func (c *Guild1Command) Run(ctx *ken.Ctx) (err error) {
+func (c *Guild1Command) Run(ctx ken.Context) (err error) {
 	err = ctx.Respond(&discordgo.InteractionResponse{
 		Type: discordgo.InteractionResponseChannelMessageWithSource,
 		Data: &discordgo.InteractionResponseData{

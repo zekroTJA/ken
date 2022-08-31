@@ -65,7 +65,7 @@ func (c *SubsCommand) IsDmCapable() bool {
 	return true
 }
 
-func (c *SubsCommand) Run(ctx *ken.Ctx) (err error) {
+func (c *SubsCommand) Run(ctx ken.Context) (err error) {
 	err = ctx.HandleSubCommands(
 		ken.SubCommandHandler{"one", c.one},
 		ken.SubCommandHandler{"two", c.two},

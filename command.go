@@ -27,7 +27,7 @@ type Command interface {
 	// When something goes wrong during command
 	// execution, you can return an error which is
 	// then handled by Ken's OnCommandError handler.
-	Run(ctx *Ctx) (err error)
+	Run(ctx Context) (err error)
 }
 
 // GuildScopedCommand can be implemented by your

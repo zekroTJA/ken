@@ -21,7 +21,7 @@ func (c *InfoUserCommand) Description() string {
 	return "Display user information."
 }
 
-func (c *InfoUserCommand) Run(ctx *ken.Ctx) (err error) {
+func (c *InfoUserCommand) Run(ctx ken.Context) (err error) {
 	err = ctx.RespondEmbed(&discordgo.MessageEmbed{
 		Description: ctx.User().String(),
 	})

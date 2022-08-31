@@ -38,7 +38,7 @@ func (c *ModalCommand) IsDmCapable() bool {
 	return false
 }
 
-func (c *ModalCommand) Run(ctx *ken.Ctx) (err error) {
+func (c *ModalCommand) Run(ctx ken.Context) (err error) {
 	if err = ctx.Defer(); err != nil {
 		return
 	}
