@@ -31,7 +31,10 @@ func main() {
 	})
 	must(err)
 
-	must(k.RegisterCommands(new(commands.TestCommand)))
+	must(k.RegisterCommands(
+		new(commands.TestCommand),
+		new(commands.ModalCommand),
+	))
 
 	defer k.Unregister()
 

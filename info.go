@@ -37,7 +37,7 @@ func mustToJson(v interface{}) string {
 	return string(d)
 }
 
-type keyTransformerFunc func(string) string
+type KeyTransformerFunc func(string) string
 
 // GetCommandInfo returns a list with information about all
 // registered commands.
@@ -52,7 +52,7 @@ type keyTransformerFunc func(string) string
 // If you want to disable this behavior, you can set
 // Config.DisableCommandInfoCache to true on intializing
 // Ken.
-func (k *Ken) GetCommandInfo(keyTransformer ...keyTransformerFunc) (cis CommandInfoList) {
+func (k *Ken) GetCommandInfo(keyTransformer ...KeyTransformerFunc) (cis CommandInfoList) {
 	kt := func(v string) string {
 		return v
 	}
@@ -73,7 +73,7 @@ func (k *Ken) GetCommandInfo(keyTransformer ...keyTransformerFunc) (cis CommandI
 	return
 }
 
-func (k *Ken) collectCommandInfo(kt keyTransformerFunc) (cis CommandInfoList) {
+func (k *Ken) collectCommandInfo(kt KeyTransformerFunc) (cis CommandInfoList) {
 	cis = make(CommandInfoList, 0, len(k.cmds))
 	for _, cmd := range k.cmds {
 		typ := reflect.TypeOf(cmd)

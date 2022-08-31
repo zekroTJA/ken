@@ -2,6 +2,7 @@ package ken
 
 import (
 	"github.com/bwmarrin/discordgo"
+	"github.com/rs/xid"
 )
 
 // ContextResponder defines the implementation of an
@@ -357,8 +358,12 @@ type ComponentContext interface {
 	ContextResponder
 
 	GetData() discordgo.MessageComponentInteractionData
+	OpenModal(
+		title string,
+		content string,
+		build func(b ComponentAssembler),
+	) (<-chan ModalContext, error)
 }
-
 type ComponentCtx struct {
 	CtxResponder
 
@@ -369,4 +374,77 @@ var _ ComponentContext = (*ComponentCtx)(nil)
 
 func (c *ComponentCtx) GetData() discordgo.MessageComponentInteractionData {
 	return c.Data
+}
+
+func (c *ComponentCtx) OpenModal(
+	title string,
+	content string,
+	build func(b ComponentAssembler),
+) (<-chan ModalContext, error) {
+	b := newComponentAssembler()
+	build(b)
+
+	modalId := xid.New().String()
+	err := c.Respond(&discordgo.InteractionResponse{
+		Type: discordgo.InteractionResponseModal,
+		Data: &discordgo.InteractionResponseData{
+			CustomID:   modalId,
+			Title:      title,
+			Content:    content,
+			Components: b.components,
+		},
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	cCtx := make(chan ModalContext, 1)
+
+	c.Ken.componentHandler.registerModalHandler(modalId, func(ctx ModalContext) bool {
+		cCtx <- ctx
+		return true
+	})
+
+	return cCtx, nil
+}
+
+type ModalContext interface {
+	ContextResponder
+
+	GetData() discordgo.ModalSubmitInteractionData
+	GetComponentByID(customId string) MessageComponent
+}
+
+type ModalCtx struct {
+	CtxResponder
+
+	Data discordgo.ModalSubmitInteractionData
+}
+
+var _ ModalContext = (*ModalCtx)(nil)
+
+func (c *ModalCtx) GetData() discordgo.ModalSubmitInteractionData {
+	return c.Data
+}
+
+func (c *ModalCtx) GetComponentByID(customId string) MessageComponent {
+	return MessageComponent{getComponentByID(customId, c.GetData().Components)}
+}
+
+func getComponentByID(
+	customId string,
+	comps []discordgo.MessageComponent,
+) discordgo.MessageComponent {
+	for _, comp := range comps {
+		if row, ok := comp.(*discordgo.ActionsRow); ok {
+			found := getComponentByID(customId, row.Components)
+			if found != nil {
+				return found
+			}
+		}
+		if customId == getCustomId(comp) {
+			return comp
+		}
+	}
+	return nil
 }
