@@ -70,6 +70,10 @@ type ContextResponder interface {
 	// GetEvent returns the InteractionCreate event instance which
 	// invoked the interaction command.
 	GetEvent() *discordgo.InteractionCreate
+
+	// User returns the User object of the executor either from
+	// the events User object or from the events Member object.
+	User() (u *discordgo.User)
 }
 
 // Context defines the implementation of an interaction
@@ -85,10 +89,6 @@ type Context interface {
 	// Channel tries to fetch the guild object from the contained
 	// guild ID using the specified state manager.
 	Guild() (*discordgo.Guild, error)
-
-	// User returns the User object of the executor either from
-	// the events User object or from the events Member object.
-	User() (u *discordgo.User)
 
 	// Options returns the application command data options
 	// with additional functionality methods.
@@ -246,6 +246,16 @@ func (c *ctxResponder) messageFlags(p discordgo.MessageFlags) (f discordgo.Messa
 	return
 }
 
+// User returns the User object of the executor either from
+// the events User object or from the events Member object.
+func (c *ctxResponder) User() (u *discordgo.User) {
+	u = c.event.User
+	if u == nil && c.event.Member != nil {
+		u = c.event.Member.User
+	}
+	return
+}
+
 // Ctx holds the invokation context of
 // a command.
 //
@@ -288,16 +298,6 @@ func (c *Ctx) Channel() (*discordgo.Channel, error) {
 // guild ID using the specified state manager.
 func (c *Ctx) Guild() (*discordgo.Guild, error) {
 	return c.ken.opt.State.Guild(c.session, c.event.GuildID)
-}
-
-// User returns the User object of the executor either from
-// the events User object or from the events Member object.
-func (c *Ctx) User() (u *discordgo.User) {
-	u = c.event.User
-	if u == nil && c.event.Member != nil {
-		u = c.event.Member.User
-	}
-	return
 }
 
 // Options returns the application command data options
