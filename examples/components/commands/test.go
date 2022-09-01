@@ -83,6 +83,9 @@ func (c *TestCommand) Run(ctx ken.Context) (err error) {
 				return true
 			}, !clearAll)
 		}, clearAll).
+		Condition(func(cctx ken.ComponentContext) bool {
+			return cctx.User().ID == ctx.User().ID
+		}).
 		Build()
 
 	return err

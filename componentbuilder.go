@@ -105,6 +105,8 @@ type ComponentBuilder struct {
 	msgId  string
 	chanId string
 
+	condition ComponentHandlerFunc
+
 	*componentAssembler
 }
 
@@ -147,6 +149,11 @@ func (t *ComponentBuilder) AddActionsRow(build func(b ComponentAssembler), once 
 	return t
 }
 
+func (t *ComponentBuilder) Condition(cond ComponentHandlerFunc) *ComponentBuilder {
+	t.condition = cond
+	return t
+}
+
 // Build attaches the registered messgae components to
 // the specified message and registers the interaction
 // handlers to the handler registry.
@@ -165,9 +172,14 @@ func (t *ComponentBuilder) Build() (unreg func() error, err error) {
 
 	for key := range t.handlers {
 		handler := t.handlers[key]
+
+		if t.condition == nil {
+			t.condition = func(ctx ComponentContext) bool { return true }
+		}
+
 		if len(handler.onceGroup) > 0 {
 			t.ch.handlers[key] = func(ctx ComponentContext) bool {
-				if !handler.handler(ctx) {
+				if !t.condition(ctx) || !handler.handler(ctx) {
 					return false
 				}
 
@@ -187,7 +199,7 @@ func (t *ComponentBuilder) Build() (unreg func() error, err error) {
 		} else if handler.once {
 			k := key // copy key for anonymous function
 			t.ch.handlers[key] = func(ctx ComponentContext) bool {
-				if !handler.handler(ctx) {
+				if !t.condition(ctx) || !handler.handler(ctx) {
 					return false
 				}
 
@@ -202,7 +214,9 @@ func (t *ComponentBuilder) Build() (unreg func() error, err error) {
 				return true
 			}
 		} else {
-			t.ch.handlers[key] = handler.handler
+			t.ch.handlers[key] = func(ctx ComponentContext) bool {
+				return t.condition(ctx) && handler.handler(ctx)
+			}
 		}
 	}
 
