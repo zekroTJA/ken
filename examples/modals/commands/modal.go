@@ -45,13 +45,8 @@ func (c *ModalCommand) Run(ctx ken.Context) (err error) {
 
 	fum := ctx.FollowUpEmbed(&discordgo.MessageEmbed{
 		Description: "How are you?",
-	})
-	if fum.HasError() {
-		return fum.Error
-	}
-
-	_, err = fum.AddComponents().
-		AddActionsRow(func(b ken.ComponentAssembler) {
+	}).AddComponents(func(cb *ken.ComponentBuilder) {
+		cb.AddActionsRow(func(b ken.ComponentAssembler) {
 			b.Add(discordgo.Button{
 				CustomID: "open-modal",
 				Label:    "Write it!",
@@ -82,8 +77,8 @@ func (c *ModalCommand) Run(ctx ken.Context) (err error) {
 				})
 				return true
 			})
-		}, true).
-		Build()
+		})
+	}).Send()
 
-	return err
+	return fum.Error
 }

@@ -81,7 +81,7 @@ func (c *SubsCommand) one(ctx ken.SubCommandContext) (err error) {
 	arg := ctx.Options().GetByName("arg").StringValue()
 	err = ctx.FollowUpEmbed(&discordgo.MessageEmbed{
 		Description: "one: " + arg,
-	}).Error
+	}).Send().Error
 	return
 }
 

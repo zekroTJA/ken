@@ -110,11 +110,18 @@ type ComponentBuilder struct {
 	*componentAssembler
 }
 
-func newBuilder(ch *ComponentHandler, msgId, chanId string) *ComponentBuilder {
+func newBuilderAttach(ch *ComponentHandler, msgId, chanId string) *ComponentBuilder {
 	return &ComponentBuilder{
 		ch:                 ch,
 		msgId:              msgId,
 		chanId:             chanId,
+		componentAssembler: newComponentAssembler(),
+	}
+}
+
+func newBuilder(ch *ComponentHandler) *ComponentBuilder {
+	return &ComponentBuilder{
+		ch:                 ch,
 		componentAssembler: newComponentAssembler(),
 	}
 }
@@ -149,6 +156,8 @@ func (t *ComponentBuilder) AddActionsRow(build func(b ComponentAssembler), once 
 	return t
 }
 
+// Condition sets a condition handler which needs to
+// be met so that the component handler is activated.
 func (t *ComponentBuilder) Condition(cond ComponentHandlerFunc) *ComponentBuilder {
 	t.condition = cond
 	return t
@@ -166,7 +175,10 @@ func (t *ComponentBuilder) Build() (unreg func() error, err error) {
 	if err != nil {
 		return unreg, err
 	}
+	return t.build()
+}
 
+func (t *ComponentBuilder) build() (unreg func() error, err error) {
 	t.ch.mtx.Lock()
 	defer t.ch.mtx.Unlock()
 

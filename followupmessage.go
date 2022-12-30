@@ -6,6 +6,55 @@ import (
 	"github.com/bwmarrin/discordgo"
 )
 
+// FollowUpMessageBuilder builds a followup
+// message interaction response.
+type FollowUpMessageBuilder struct {
+	ken *Ken
+	i   *discordgo.Interaction
+
+	data *discordgo.WebhookParams
+	wait bool
+
+	componentBuilder *ComponentBuilder
+}
+
+// Send builds the followup message and sends
+// it as response to the interaction.
+func (b *FollowUpMessageBuilder) Send() *FollowUpMessage {
+	if b.componentBuilder != nil {
+		b.data.Components = b.componentBuilder.components
+	}
+
+	fum := &FollowUpMessage{
+		ken: b.ken,
+		i:   b.i,
+	}
+	fum.Message, fum.Error = b.ken.s.FollowupMessageCreate(b.i, b.wait, b.data)
+	if fum.HasError() {
+		return fum
+	}
+
+	if b.componentBuilder != nil {
+		b.componentBuilder.chanId = fum.ChannelID
+		b.componentBuilder.msgId = fum.ID
+		fum.unregisterComponentHandlers, fum.Error = b.componentBuilder.build()
+	}
+
+	return fum
+}
+
+// AddComponents is getting passed a builder function
+// where you can attach message components and handlers
+// which will be applied to the followup message when
+// sent.
+func (b *FollowUpMessageBuilder) AddComponents(cb func(*ComponentBuilder)) *FollowUpMessageBuilder {
+	if b.componentBuilder == nil {
+		b.componentBuilder = newBuilder(b.ken.componentHandler)
+	}
+	cb(b.componentBuilder)
+	return b
+}
+
 // FollowUpMessage wraps an interaction follow
 // up message and collected errors.
 type FollowUpMessage struct {
@@ -17,6 +66,8 @@ type FollowUpMessage struct {
 
 	ken *Ken
 	i   *discordgo.Interaction
+
+	unregisterComponentHandlers func() error
 }
 
 // Edit overwrites the given follow up message with the
@@ -76,4 +127,13 @@ func (m *FollowUpMessage) HasError() bool {
 // message components with handlers to the FollowUpMessage.
 func (m *FollowUpMessage) AddComponents() *ComponentBuilder {
 	return m.ken.Components().Add(m.ID, m.ChannelID)
+}
+
+// UnregisterComponentHandlers removes all handlers of
+// attached componets from the register.
+func (m *FollowUpMessage) UnregisterComponentHandlers() error {
+	if m.unregisterComponentHandlers != nil {
+		return m.unregisterComponentHandlers()
+	}
+	return nil
 }

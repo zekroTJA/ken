@@ -7,7 +7,9 @@ import (
 	"github.com/zekrotja/ken"
 )
 
-type TestCommand struct{}
+type TestCommand struct {
+	ken.EphemeralCommand
+}
 
 var (
 	_ ken.SlashCommand = (*TestCommand)(nil)
@@ -54,15 +56,12 @@ func (c *TestCommand) Run(ctx ken.Context) (err error) {
 		clearAll = v.BoolValue()
 	}
 
-	fum := ctx.FollowUpEmbed(&discordgo.MessageEmbed{
+	b := ctx.FollowUpEmbed(&discordgo.MessageEmbed{
 		Description: "How are you?",
 	})
-	if fum.HasError() {
-		return fum.Error
-	}
 
-	_, err = fum.AddComponents().
-		AddActionsRow(func(b ken.ComponentAssembler) {
+	b.AddComponents(func(cb *ken.ComponentBuilder) {
+		cb.AddActionsRow(func(b ken.ComponentAssembler) {
 			b.Add(discordgo.Button{
 				CustomID: "button-1",
 				Label:    "Absolutely fantastic!",
@@ -83,10 +82,12 @@ func (c *TestCommand) Run(ctx ken.Context) (err error) {
 				return true
 			}, !clearAll)
 		}, clearAll).
-		Condition(func(cctx ken.ComponentContext) bool {
-			return cctx.User().ID == ctx.User().ID
-		}).
-		Build()
+			Condition(func(cctx ken.ComponentContext) bool {
+				return cctx.User().ID == ctx.User().ID
+			})
+	})
 
-	return err
+	fum := b.Send()
+
+	return fum.Error
 }

@@ -61,7 +61,7 @@ func NewComponentHandler(ken *Ken) *ComponentHandler {
 // added components to the given message by messageId and
 // channelId on build.
 func (t *ComponentHandler) Add(messageId, channelId string) *ComponentBuilder {
-	return newBuilder(t, messageId, channelId)
+	return newBuilderAttach(t, messageId, channelId)
 }
 
 // Register registers a raw ComponentHandlerFunc which is

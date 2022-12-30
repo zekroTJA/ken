@@ -66,7 +66,7 @@ func (c *KickCommand) Run(ctx ken.Context) (err error) {
 
 	err = ctx.FollowUpEmbed(&discordgo.MessageEmbed{
 		Description: fmt.Sprintf("Kicked member <@%s> with reason\n```\n%s```", user.ID, reason),
-	}).Error
+	}).Send().Error
 
 	return
 }

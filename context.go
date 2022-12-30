@@ -34,16 +34,16 @@ type ContextResponder interface {
 	//
 	// This way it allows to be chained in one call with
 	// subsequent FollowUpMessage method calls.
-	FollowUp(wait bool, data *discordgo.WebhookParams) (fum *FollowUpMessage)
+	FollowUp(wait bool, data *discordgo.WebhookParams) (fumb *FollowUpMessageBuilder)
 
 	// FollowUpEmbed is shorthand for FollowUp with an
 	// embed payload as passed.
-	FollowUpEmbed(emb *discordgo.MessageEmbed) (fum *FollowUpMessage)
+	FollowUpEmbed(emb *discordgo.MessageEmbed) (fumb *FollowUpMessageBuilder)
 
 	// FollowUpError is shorthand for FollowUpEmbed with an
 	// error embed as message with the passed content and
 	// title.
-	FollowUpError(content, title string) (fum *FollowUpMessage)
+	FollowUpError(content, title string) (fumb *FollowUpMessageBuilder)
 
 	// Defer is shorthand for Respond with an InteractionResponse
 	// of the type InteractionResponseDeferredChannelMessageWithSource.
@@ -186,17 +186,17 @@ func (c *ctxResponder) RespondError(content, title string) (err error) {
 	})
 }
 
-func (c *ctxResponder) FollowUp(wait bool, data *discordgo.WebhookParams) (fum *FollowUpMessage) {
+func (c *ctxResponder) FollowUp(wait bool, data *discordgo.WebhookParams) (fumb *FollowUpMessageBuilder) {
 	data.Flags = c.messageFlags(data.Flags)
-	fum = &FollowUpMessage{
-		ken: c.ken,
-		i:   c.event.Interaction,
+	return &FollowUpMessageBuilder{
+		ken:  c.ken,
+		i:    c.event.Interaction,
+		data: data,
+		wait: wait,
 	}
-	fum.Message, fum.Error = c.GetSession().FollowupMessageCreate(c.event.Interaction, wait, data)
-	return
 }
 
-func (c *ctxResponder) FollowUpEmbed(emb *discordgo.MessageEmbed) (fum *FollowUpMessage) {
+func (c *ctxResponder) FollowUpEmbed(emb *discordgo.MessageEmbed) (fumb *FollowUpMessageBuilder) {
 	if emb.Color <= 0 {
 		emb.Color = c.ken.opt.EmbedColors.Default
 	}
@@ -207,7 +207,7 @@ func (c *ctxResponder) FollowUpEmbed(emb *discordgo.MessageEmbed) (fum *FollowUp
 	})
 }
 
-func (c *ctxResponder) FollowUpError(content, title string) (fum *FollowUpMessage) {
+func (c *ctxResponder) FollowUpError(content, title string) (fumb *FollowUpMessageBuilder) {
 	return c.FollowUpEmbed(&discordgo.MessageEmbed{
 		Description: content,
 		Title:       title,
