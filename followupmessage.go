@@ -22,7 +22,7 @@ type FollowUpMessageBuilder struct {
 // it as response to the interaction.
 func (b *FollowUpMessageBuilder) Send() *FollowUpMessage {
 	if b.componentBuilder != nil {
-		b.data.Components = b.componentBuilder.components
+		b.data.Components = append(b.data.Components, b.componentBuilder.components...)
 	}
 
 	fum := &FollowUpMessage{

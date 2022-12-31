@@ -157,9 +157,6 @@ func (c *ctxResponder) Respond(r *discordgo.InteractionResponse) (err error) {
 	} else {
 		err = c.GetSession().InteractionRespond(c.event.Interaction, r)
 		c.responded = err == nil
-		if err != nil {
-			_ = err
-		}
 	}
 	return
 }
