@@ -2,7 +2,7 @@
 
 # ken &nbsp; [![](https://img.shields.io/badge/docs-pkg.do.dev-blue?logo=go&logoColor=white)](https://pkg.go.dev/github.com/zekrotja/ken?tab=doc) [![GitHub tag (latest by date)](https://img.shields.io/github/v/tag/zekrotja/ken)](https://github.com/zekroTJA/ken/releases) [![Go Report Card](https://goreportcard.com/badge/github.com/zekrotja/ken)](https://goreportcard.com/report/github.com/zekrotja/ken)
 
-> ⚠️ **Disclaimer**  
+> **Warning**  
 > This package is still in a very early state of development and future updates might include breaking changes to the API until the first official release.
 
 剣 *(`ken` - japanese for `Sword`)* - A cutting edge *(haha)*, prototype, object-oriented and highly modular [Discord application commands](https://discord.com/developers/docs/interactions/application-commands) handler for [Discordgo](https://github.com/bwmarrin/discordgo).
