@@ -1,0 +1,35 @@
+name: Bug Report
+description: Report a bug or unexpected behaviour.
+labels:
+  - bug
+assignees:
+  - zekrotja
+body:
+  - type: markdown
+    attributes:
+      value: Thank you for filling out this form to file a bug report! ❤️
+  - type: input
+    id: description
+    validations:
+      required: true
+    attributes:
+      label: Short description
+      description: |
+        Please describe the issue as concise as possible.       
+  - type: textarea
+    id: reproduction
+    validations:
+      required: true
+    attributes:
+      label: Steps to reproduce
+      description: |
+        Please describe - step by step - how to reproduce the symptoms of the issue.
+  - type: textarea
+    id: attachments
+    validations:
+      required: false
+    attributes:
+      label: Attachments
+      description: | 
+        Here you can attach image links, logs or videos to the issue. 
+        Please use the [markdown notation for image files](https://docs.github.com/en/get-started/writing-on-github/getting-started-with-writing-and-formatting-on-github/basic-writing-and-formatting-syntax#images).

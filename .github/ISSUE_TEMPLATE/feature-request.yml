@@ -1,0 +1,27 @@
+name: Feature Request
+description: Suggest new features or improvements of existing features of ken.
+labels:
+  - enhancement
+assignees:
+  - zekrotja
+body:
+  - type: markdown
+    attributes:
+      value: Thank you for filling out this form to improve ken! ❤️
+  - type: input
+    id: description
+    validations:
+      required: true
+    attributes:
+      label: Short description
+      description: |
+        Please describe here the enhancement/feature as concise as possible.
+  - type: textarea
+    id: attachments
+    validations:
+      required: false
+    attributes:
+      label: Attachments
+      description: | 
+        Here you can append images, sketches or other stuff related to the request.
+        Please use the [markdown notation for image files](https://docs.github.com/en/get-started/writing-on-github/getting-started-with-writing-and-formatting-on-github/basic-writing-and-formatting-syntax#images).
