@@ -8,14 +8,14 @@ body:
   - type: markdown
     attributes:
       value: Thank you for filling out this form to file a bug report! ❤️
-  - type: input
+  - type: textarea
     id: description
     validations:
       required: true
     attributes:
       label: Short description
       description: |
-        Please describe the issue as concise as possible.       
+        Please describe the issue as concise as possible.
   - type: textarea
     id: reproduction
     validations:
@@ -30,6 +30,6 @@ body:
       required: false
     attributes:
       label: Attachments
-      description: | 
+      description: |
         Here you can attach image links, logs or videos to the issue. 
         Please use the [markdown notation for image files](https://docs.github.com/en/get-started/writing-on-github/getting-started-with-writing-and-formatting-on-github/basic-writing-and-formatting-syntax#images).
