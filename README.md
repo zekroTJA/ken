@@ -3,13 +3,13 @@
 # ken &nbsp; [![](https://img.shields.io/badge/docs-pkg.do.dev-blue?logo=go&logoColor=white)](https://pkg.go.dev/github.com/zekrotja/ken?tab=doc) [![GitHub tag (latest by date)](https://img.shields.io/github/v/tag/zekrotja/ken)](https://github.com/zekroTJA/ken/releases) [![Go Report Card](https://goreportcard.com/badge/github.com/zekrotja/ken)](https://goreportcard.com/report/github.com/zekrotja/ken)
 
 > **Warning**  
-> This package is still in a very early state of development and future updates might include breaking changes to the API until the first official release.
+> This package is still in an early state of development and future updates might introduce breaking changes to the API until the first official release.
 
-剣 *(`ken` - japanese for `Sword`)* - A cutting edge *(haha)*, prototype, object-oriented and highly modular [Discord application commands](https://discord.com/developers/docs/interactions/application-commands) handler for [Discordgo](https://github.com/bwmarrin/discordgo).
+剣 *(`ken` - japanese for `Sword`)* - A cutting edge *(haha)*, object-oriented and highly modular [Discord application commands](https://discord.com/developers/docs/interactions/application-commands) and interaction handler for [Discordgo](https://github.com/bwmarrin/discordgo).
 
 For basic usage examples, see the [basic example section](examples/basic). Examples on how to use middlewares can be found [here](examples/middlewares).
 
-This package was primarily written with the motivation to use it in my Discord bot [shinpuru](https://github.com/zekroTJA/shinpuru).
+*This package was primarily written with the motivation to use it in my Discord bot [shinpuru](https://github.com/zekroTJA/shinpuru). So some design decision might be influenced by that.*
 
 ## All you need to know
 
@@ -20,16 +20,17 @@ This package was primarily written with the motivation to use it in my Discord b
 
 ## Why should you use this package?
 
-It may sound crazy, but `ken` tries to simplify the complexity behind application command and message component handling while giving you full control over the event handling and registration process.
+ken tries to provide an "everything in the kitchen skink" framework to simplify and speed up bot development using the Discord interaction API. It also tries to provide a great developer experience while giving you full control over the underlying event data and API interactions – just in the style of discordgo itself.
 
 Also, ken provides a higly modular middleware pipeline to control who can use commands and how they should be handled.
 
-Things you can do with `ken`:
+Things you can do with ken:
 - Register and handle [Slash Commands](examples/basic).
-- Register and handle [User Commands](example/usermsgcommands).
-- Register and handle [Message Commands](example/usermsgcommands).
-- Attach and handle [Message Components](example/components).
-- Open and handle [Modals](example/modals).
+- Register and handle [User Commands](examples/usermsgcommands).
+- Register and handle [Message Commands](examples/usermsgcommands).
+- Attach and handle [Message Components](examples/components).
+- Open and handle [Modals](examples/modals).
+- Manage [command autocompletion](examples/autocomplete).
 
 ### High modularity
 
@@ -46,7 +47,7 @@ Via options you can also specify a custom state handler, if you are using someth
 
 ### Quality of Life Implementations
 
-`ken` passes a single [`Context`](https://pkg.go.dev/github.com/zekrotja/ken#Context) object to the command handlers which contains everything you need. It allows you to access raw `discordgo.InteractionCreate` event data, the `Command` instance which has been called, the `discordgo.Session`, as well as many utility functions.
+ken passes a single [`Context`](https://pkg.go.dev/github.com/zekrotja/ken#Context) object to the command handlers which contains everything you need. It allows you to access raw `discordgo.InteractionCreate` event data, the `Command` instance which has been called, the `discordgo.Session`, as well as many utility functions.
 
 For example, you can easily respond to the event by using the [`Respond`](https://pkg.go.dev/github.com/zekrotja/ken#Ctx.Respond) method to send a response to an interaction. [`Defer`](https://pkg.go.dev/github.com/zekrotja/ken#Ctx.Defer) does the same but sends a `defer` response so you can send follow-up messages afterwards with a delay.
 
@@ -56,9 +57,9 @@ The `Ctx` also allows you to handle sub-commands using [`HandleSubCommands`](htt
 
 ## Performance
 
-To avoid registering and unregistering commands everytime the bot restarts, `ken` allows to cache commands using a [`CommandStore`](https://pkg.go.dev/github.com/zekrotja/ken@v0.6.1/store#CommandStore). Although disabled by default, the provided default implementation [`LocalCommandStore`](https://pkg.go.dev/github.com/zekrotja/ken@v0.6.1/store#LocalCommandStore) can be used. It stores the commands in a file which will be tried to read from on the next startup. You can also implement your own store, with [Redis](https://github.com/zekroTJA/shinpuru/tree/dev/pkg/rediscmdstore) for example.
+To avoid registering and unregistering commands everytime the bot restarts, ken allows to cache commands using a [`CommandStore`](https://pkg.go.dev/github.com/zekrotja/ken/store#CommandStore). Although disabled by default, the provided default implementation [`LocalCommandStore`](https://pkg.go.dev/github.com/zekrotja/ken/store#LocalCommandStore) can be used. It stores the commands in a file which will be tried to read from on the next startup. You can also implement your own store, with [Redis](https://github.com/zekroTJA/shinpuru/tree/dev/pkg/rediscmdstore) for example.
 
-`ken` uses `sync.Pool` as object pools for the command context which are used for command and sub-command execution. This is done to avoid creating a new context object for each command execution which would put strain on the garbage collector, especially on high command execution frequencies. 
+ken uses `sync.Pool` as object pools for the command context which are used for command and sub-command execution. This is done to avoid creating a new context object for each command execution which would put strain on the garbage collector, especially on high command execution frequencies. 
 
 ## Example Usage
 
@@ -124,7 +125,7 @@ func main() {
 }
 ```
 
-You can also find a "real world" implementation in my Discord Bot [shinpuru](https://github.com/zekrotja/shinpuru), where `ken` is used as main slash command framework.
+You can also find a "real world" implementation in my Discord Bot [shinpuru](https://github.com/zekrotja/shinpuru), where ken is used as main slash command framework.
 
 ## FAQ
 
