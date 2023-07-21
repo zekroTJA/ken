@@ -107,8 +107,48 @@ func (t *AutocompleteContext) GetData() discordgo.ApplicationCommandInteractionD
 //
 // If ok is false, no value could be found for the given option.
 func (t *AutocompleteContext) GetInput(optionName string) (value string, ok bool) {
-	data := t.GetData()
-	for _, opt := range data.Options {
+	return AutoCompleteOptions{t.GetData().Options, ""}.GetInput(optionName)
+}
+
+// SubCommand returns the sub command options for any of the given sub commands.
+// If no command name is passed, the sub command options are returned from the first
+// sub command found in the event.
+func (t *AutocompleteContext) SubCommand(name ...string) AutoCompleteOptions {
+	opts := t.GetData().Options
+	subCmdOptions := make([]*discordgo.ApplicationCommandInteractionDataOption, 0, len(opts))
+	// TODO: If sub command groups get implemented, this needs to be adjusted accordingly
+	for _, opt := range opts {
+		if opt.Type == discordgo.ApplicationCommandOptionSubCommand {
+			subCmdOptions = append(subCmdOptions, opt)
+		}
+	}
+
+	if len(subCmdOptions) == 0 {
+		return AutoCompleteOptions{nil, ""}
+	}
+
+	if len(name) == 0 {
+		return AutoCompleteOptions{subCmdOptions[0].Options, subCmdOptions[0].Name}
+	}
+
+	for _, n := range name {
+		for _, opt := range subCmdOptions {
+			if opt.Name == n {
+				return AutoCompleteOptions{opt.Options, opt.Name}
+			}
+		}
+	}
+
+	return AutoCompleteOptions{nil, ""}
+}
+
+type AutoCompleteOptions struct {
+	options []*discordgo.ApplicationCommandInteractionDataOption
+	name    string
+}
+
+func (t AutoCompleteOptions) GetInput(optionName string) (value string, ok bool) {
+	for _, opt := range t.options {
 		if opt.Name == optionName {
 			return opt.StringValue(), true
 		}
@@ -117,19 +157,6 @@ func (t *AutocompleteContext) GetInput(optionName string) (value string, ok bool
 	return "", false
 }
 
-// GetInputAny takes the names of multiple command options and returns the input value from
-// the event for any option that matches the input as well as the option name matching.
-//
-// If ok is false, no value could be found for the given options.
-func (t *AutocompleteContext) GetInputAny(optionNames ...string) (value string, optionName string, ok bool) {
-	data := t.GetData()
-	for _, opt := range data.Options {
-		for _, name := range optionNames {
-			if name == opt.Name {
-				return opt.StringValue(), opt.Name, true
-			}
-		}
-	}
-
-	return "", "", false
+func (t AutoCompleteOptions) Name() string {
+	return t.name
 }
