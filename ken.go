@@ -50,6 +50,9 @@ type Options struct {
 	// OnCommandError is called when an error occurs
 	// during middleware or command execution.
 	OnCommandError func(err error, ctx *Ctx)
+	// OnEventError is called when any other user
+	// event based error occured.
+	OnEventError func(context string, err error)
 }
 
 // Ken is the handler to register, manage and
@@ -84,6 +87,9 @@ var defaultOptions = Options{
 	},
 	OnCommandError: func(err error, ctx *Ctx) {
 		log.Printf("[KEN] {command error} - %s : %s\n", ctx.Command.Name(), err.Error())
+	},
+	OnEventError: func(context string, err error) {
+		log.Printf("[KEN] {event error} - %s : %s\n", context, err.Error())
 	},
 }
 
@@ -385,22 +391,6 @@ func (k *Ken) onInteractionApplicationCommand(
 }
 
 func (k *Ken) onInteractionAutoComplete(s *discordgo.Session, e *discordgo.InteractionCreate) {
-	// s.InteractionRespond(e.Interaction, &discordgo.InteractionResponse{
-	// 	Type: discordgo.InteractionApplicationCommandAutocompleteResult,
-	// 	Data: &discordgo.InteractionResponseData{
-	// 		Choices: []*discordgo.ApplicationCommandOptionChoice{
-	// 			{
-	// 				Name:  "some name",
-	// 				Value: "some value",
-	// 			},
-	// 			{
-	// 				Name:  "another name",
-	// 				Value: "another value",
-	// 			},
-	// 		},
-	// 	},
-	// })
-
 	k.cmdsLock.RLock()
 	cmd := k.cmds[e.ApplicationCommandData().Name]
 	k.cmdsLock.RUnlock()
@@ -422,7 +412,7 @@ func (k *Ken) onInteractionAutoComplete(s *discordgo.Session, e *discordgo.Inter
 
 	choises, err := autocompleteCmd.Autocomplete(ctx)
 	if err != nil {
-		// TODO: handle error
+		k.opt.OnEventError("command autocomplete call failed", err)
 		return
 	}
 
@@ -433,7 +423,7 @@ func (k *Ken) onInteractionAutoComplete(s *discordgo.Session, e *discordgo.Inter
 		},
 	})
 	if err != nil {
-		// TODO: handle error
+		k.opt.OnEventError("command autocomplete response failed", err)
 		return
 	}
 }
