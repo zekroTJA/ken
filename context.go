@@ -41,6 +41,10 @@ type ContextResponder interface {
 	// subsequent FollowUpMessage method calls.
 	FollowUp(wait bool, data *discordgo.WebhookParams) (fumb *FollowUpMessageBuilder)
 
+	// FollowUpEmbed is shorthand for FollowUp with a simple
+	// message as response content.
+	FollowUpMessage(message string) (fumb *FollowUpMessageBuilder)
+
 	// FollowUpEmbed is shorthand for FollowUp with an
 	// embed payload as passed.
 	FollowUpEmbed(emb *discordgo.MessageEmbed) (fumb *FollowUpMessageBuilder)
@@ -205,6 +209,12 @@ func (c *ctxResponder) FollowUp(wait bool, data *discordgo.WebhookParams) (fumb 
 		data: data,
 		wait: wait,
 	}
+}
+
+func (c *ctxResponder) FollowUpMessage(message string) (fumb *FollowUpMessageBuilder) {
+	return c.FollowUp(true, &discordgo.WebhookParams{
+		Content: message,
+	})
 }
 
 func (c *ctxResponder) FollowUpEmbed(emb *discordgo.MessageEmbed) (fumb *FollowUpMessageBuilder) {
