@@ -21,6 +21,8 @@ type AutocompleteCommand interface {
 
 // AutocompleteContext provides easy acces to the underlying event data.
 type AutocompleteContext struct {
+	ObjectMap
+
 	session *discordgo.Session
 	ken     *Ken
 	event   *discordgo.InteractionCreate
@@ -28,10 +30,28 @@ type AutocompleteContext struct {
 
 var _ safepool.ResetState = (*AutocompleteContext)(nil)
 
+func newAutocompleteContext() *AutocompleteContext {
+	return &AutocompleteContext{
+		ObjectMap: new(simpleObjectMap),
+	}
+}
+
 func (t *AutocompleteContext) ResetState() {
 	t.ken = nil
 	t.session = nil
 	t.event = nil
+	t.Purge()
+}
+
+// Get either returns an instance from the internal object map -
+// if existent. Otherwise, the object is looked up in the specified
+// dependency provider, if available. When no object was found in
+// either of both maps, nil is returned.
+func (c *AutocompleteContext) Get(key string) (v interface{}) {
+	if v = c.ObjectMap.Get(key); v == nil && c.ken.opt.DependencyProvider != nil {
+		v = c.ken.opt.DependencyProvider.Get(key)
+	}
+	return
 }
 
 // Event returns the underlying InteractionCreate event.
