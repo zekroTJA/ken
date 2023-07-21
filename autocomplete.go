@@ -116,3 +116,20 @@ func (t *AutocompleteContext) GetInput(optionName string) (value string, ok bool
 
 	return "", false
 }
+
+// GetInputAny takes the names of multiple command options and returns the input value from
+// the event for any option that matches the input as well as the option name matching.
+//
+// If ok is false, no value could be found for the given options.
+func (t *AutocompleteContext) GetInputAny(optionNames ...string) (value string, optionName string, ok bool) {
+	data := t.GetData()
+	for _, opt := range data.Options {
+		for _, name := range optionNames {
+			if name == opt.Name {
+				return opt.StringValue(), opt.Name, true
+			}
+		}
+	}
+
+	return "", "", false
+}
