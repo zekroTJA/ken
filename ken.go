@@ -108,7 +108,7 @@ func New(s *discordgo.Session, options ...Options) (k *Ken, err error) {
 		mwAfter:             make([]MiddlewareAfter, 0),
 		ctxPool:             safepool.New(newCtx),
 		subCtxPool:          safepool.New(func() *subCommandCtx { return &subCommandCtx{} }),
-		autoCompleteCtxPool: safepool.New(func() *AutocompleteContext { return &AutocompleteContext{} }),
+		autoCompleteCtxPool: safepool.New(newAutocompleteContext),
 	}
 
 	k.componentHandler = NewComponentHandler(k)
