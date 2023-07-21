@@ -3,6 +3,7 @@ package ken
 import (
 	"github.com/bwmarrin/discordgo"
 	"github.com/rs/xid"
+	"github.com/zekrotja/safepool"
 )
 
 // ContextResponder defines the implementation of an
@@ -17,6 +18,10 @@ type ContextResponder interface {
 	// When an interaction has already been responded to,
 	// the response will be edited instead on execution.
 	Respond(r *discordgo.InteractionResponse) (err error)
+
+	// RespondMessage is shorthand for Respond with a simple
+	// message as response content.
+	RespondMessage(message string) (err error)
 
 	// RespondEmbed is shorthand for Respond with an
 	// embed payload as passed.
@@ -161,6 +166,15 @@ func (c *ctxResponder) Respond(r *discordgo.InteractionResponse) (err error) {
 	return
 }
 
+func (c *ctxResponder) RespondMessage(message string) (err error) {
+	return c.Respond(&discordgo.InteractionResponse{
+		Type: discordgo.InteractionResponseChannelMessageWithSource,
+		Data: &discordgo.InteractionResponseData{
+			Content: message,
+		},
+	})
+}
+
 func (c *ctxResponder) RespondEmbed(emb *discordgo.MessageEmbed) (err error) {
 	if emb.Color <= 0 {
 		emb.Color = c.ken.opt.EmbedColors.Default
@@ -267,6 +281,7 @@ type Ctx struct {
 }
 
 var _ Context = (*Ctx)(nil)
+var _ safepool.ResetState = (*Ctx)(nil)
 
 func newCtx() *Ctx {
 	return &Ctx{
@@ -291,7 +306,7 @@ func (c *Ctx) Channel() (*discordgo.Channel, error) {
 	return c.ken.opt.State.Channel(c.session, c.event.ChannelID)
 }
 
-// Channel tries to fetch the guild object from the contained
+// Guild tries to fetch the guild object from the contained
 // guild ID using the specified state manager.
 func (c *Ctx) Guild() (*discordgo.Guild, error) {
 	return c.ken.opt.State.Guild(c.session, c.event.GuildID)
@@ -322,6 +337,10 @@ func (c *Ctx) UserCommand() (cmd UserCommand, ok bool) {
 func (c *Ctx) MessageCommand() (cmd MessageCommand, ok bool) {
 	cmd, ok = c.Command.(MessageCommand)
 	return
+}
+
+func (c *Ctx) ResetState() {
+	c.Purge()
 }
 
 // SubCommandHandler is the handler function used
@@ -382,7 +401,7 @@ func (c *Ctx) HandleSubCommands(handler ...SubCommandHandler) (err error) {
 			continue
 		}
 
-		ctx := c.ken.subCtxPool.Get().(*subCommandCtx)
+		ctx := c.ken.subCtxPool.Get()
 		ctx.Ctx = c
 		ctx.subCommandName = h.Name
 		err = h.Run(ctx)

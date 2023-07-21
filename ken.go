@@ -10,6 +10,7 @@ import (
 	"github.com/bwmarrin/discordgo"
 	"github.com/zekrotja/ken/state"
 	"github.com/zekrotja/ken/store"
+	"github.com/zekrotja/safepool"
 )
 
 // EmbedColors lets you define custom colors for embeds.
@@ -61,9 +62,11 @@ type Ken struct {
 	cmds             map[string]Command
 	idcache          map[string]string
 	cmdInfoCache     CommandInfoList
-	ctxPool          sync.Pool
-	subCtxPool       sync.Pool
 	componentHandler *ComponentHandler
+
+	ctxPool             safepool.SafePool[*Ctx]
+	subCtxPool          safepool.SafePool[*subCommandCtx]
+	autoCompleteCtxPool safepool.SafePool[*AutocompleteContext]
 
 	mwBefore []MiddlewareBefore
 	mwAfter  []MiddlewareAfter
@@ -92,21 +95,14 @@ var defaultOptions = Options{
 // will be applied.
 func New(s *discordgo.Session, options ...Options) (k *Ken, err error) {
 	k = &Ken{
-		s:       s,
-		cmds:    make(map[string]Command),
-		idcache: make(map[string]string),
-		ctxPool: sync.Pool{
-			New: func() interface{} {
-				return newCtx()
-			},
-		},
-		subCtxPool: sync.Pool{
-			New: func() interface{} {
-				return &subCommandCtx{}
-			},
-		},
-		mwBefore: make([]MiddlewareBefore, 0),
-		mwAfter:  make([]MiddlewareAfter, 0),
+		s:                   s,
+		cmds:                make(map[string]Command),
+		idcache:             make(map[string]string),
+		mwBefore:            make([]MiddlewareBefore, 0),
+		mwAfter:             make([]MiddlewareAfter, 0),
+		ctxPool:             safepool.New(newCtx),
+		subCtxPool:          safepool.New(func() *subCommandCtx { return &subCommandCtx{} }),
+		autoCompleteCtxPool: safepool.New(func() *AutocompleteContext { return &AutocompleteContext{} }),
 	}
 
 	k.componentHandler = NewComponentHandler(k)
@@ -318,10 +314,18 @@ func (k *Ken) onReady(s *discordgo.Session, e *discordgo.Ready) {
 }
 
 func (k *Ken) onInteractionCreate(s *discordgo.Session, e *discordgo.InteractionCreate) {
-	if e.Type != discordgo.InteractionApplicationCommand {
-		return
+	switch e.Type {
+	case discordgo.InteractionApplicationCommand:
+		k.onInteractionApplicationCommand(s, e)
+	case discordgo.InteractionApplicationCommandAutocomplete:
+		k.onInteractionAutoComplete(s, e)
 	}
+}
 
+func (k *Ken) onInteractionApplicationCommand(
+	s *discordgo.Session,
+	e *discordgo.InteractionCreate,
+) {
 	k.cmdsLock.RLock()
 	cmd := k.cmds[e.ApplicationCommandData().Name]
 	k.cmdsLock.RUnlock()
@@ -336,9 +340,9 @@ func (k *Ken) onInteractionCreate(s *discordgo.Session, e *discordgo.Interaction
 		return
 	}
 
-	ctx := k.ctxPool.Get().(*Ctx)
+	ctx := k.ctxPool.Get()
 	defer k.ctxPool.Put(ctx)
-	ctx.Purge()
+
 	ctx.responded = false
 	ctx.ken = k
 	ctx.session = s
@@ -377,5 +381,59 @@ func (k *Ken) onInteractionCreate(s *discordgo.Session, e *discordgo.Interaction
 		if err != nil {
 			k.opt.OnCommandError(err, ctx)
 		}
+	}
+}
+
+func (k *Ken) onInteractionAutoComplete(s *discordgo.Session, e *discordgo.InteractionCreate) {
+	// s.InteractionRespond(e.Interaction, &discordgo.InteractionResponse{
+	// 	Type: discordgo.InteractionApplicationCommandAutocompleteResult,
+	// 	Data: &discordgo.InteractionResponseData{
+	// 		Choices: []*discordgo.ApplicationCommandOptionChoice{
+	// 			{
+	// 				Name:  "some name",
+	// 				Value: "some value",
+	// 			},
+	// 			{
+	// 				Name:  "another name",
+	// 				Value: "another value",
+	// 			},
+	// 		},
+	// 	},
+	// })
+
+	k.cmdsLock.RLock()
+	cmd := k.cmds[e.ApplicationCommandData().Name]
+	k.cmdsLock.RUnlock()
+
+	if cmd == nil {
+		return
+	}
+
+	autocompleteCmd, ok := cmd.(AutocompleteCommand)
+	if !ok {
+		return
+	}
+
+	ctx := k.autoCompleteCtxPool.Get()
+	defer k.autoCompleteCtxPool.Put(ctx)
+	ctx.ken = k
+	ctx.session = s
+	ctx.event = e
+
+	choises, err := autocompleteCmd.Autocomplete(ctx)
+	if err != nil {
+		// TODO: handle error
+		return
+	}
+
+	err = s.InteractionRespond(e.Interaction, &discordgo.InteractionResponse{
+		Type: discordgo.InteractionApplicationCommandAutocompleteResult,
+		Data: &discordgo.InteractionResponseData{
+			Choices: choises,
+		},
+	})
+	if err != nil {
+		// TODO: handle error
+		return
 	}
 }
