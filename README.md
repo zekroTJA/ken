@@ -25,7 +25,7 @@ ken tries to provide an "everything in the kitchen skink" framework to simplify 
 Also, ken provides a higly modular middleware pipeline to control who can use commands and how they should be handled.
 
 Things you can do with ken:
-- Register and handle [Slash Commands](examples/basic).
+- Register and handle [Slash Commands](examples/basic) *(even with full support for sub commands and sub command groups!)*.
 - Register and handle [User Commands](examples/usermsgcommands).
 - Register and handle [Message Commands](examples/usermsgcommands).
 - Attach and handle [Message Components](examples/components).
