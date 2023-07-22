@@ -80,8 +80,6 @@ github.com/zekroTJA/timedmap v1.5.1 h1:s9SI1T8gl1OAfDw9LKZYMfbhNqqCIOhZTfhsHgpKH
 github.com/zekroTJA/timedmap v1.5.1/go.mod h1:Go4uPxMN1Wjl5IgO6HYD1tM9IQhkYEVqcrrdsI4ljXo=
 github.com/zekrotja/dgrs v0.5.7 h1:CEUMiDI60RU1gP9IjAcL3to2xp49GZmhN+UeklwOBXM=
 github.com/zekrotja/dgrs v0.5.7/go.mod h1:H2yDqIV052TN/1FDo+CKoJgcxxz/6r8MJcxFkxomVBs=
-github.com/zekrotja/safepool v1.0.0 h1:dcrSChiJ46hd0BQ0ksceCqWWqkd3HYxozwnM1y2guhk=
-github.com/zekrotja/safepool v1.0.0/go.mod h1:TIeAz8hLF0HR9lv9VPS89M/UwYhnmbkbyQQ0quJ3t8k=
 github.com/zekrotja/safepool v1.1.0 h1:Fc9smZ5eI1TxVqAcRsLPl6rGiWybm4v8YxAqX6ECJEY=
 github.com/zekrotja/safepool v1.1.0/go.mod h1:TIeAz8hLF0HR9lv9VPS89M/UwYhnmbkbyQQ0quJ3t8k=
 go.opentelemetry.io/otel v0.20.0/go.mod h1:Y3ugLH2oa81t5QO+Lty+zXf8zC9L26ax4Nzoxm/dooo=

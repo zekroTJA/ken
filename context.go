@@ -90,6 +90,7 @@ type ContextResponder interface {
 type Context interface {
 	ContextResponder
 	ObjectProvider
+	safepool.ResetState
 
 	// Channel tries to fetch the channel object from the contained
 	// channel ID using the specified state manager.
@@ -126,7 +127,7 @@ type Context interface {
 	//
 	// The SubCommandCtx passed must not be stored or used
 	// after command execution.
-	HandleSubCommands(handler ...SubCommandHandler) (err error)
+	HandleSubCommands(handler ...CommandHandler) (err error)
 
 	// GetKen returns the root instance of Ken.
 	GetKen() *Ken
@@ -353,11 +354,50 @@ func (c *Ctx) ResetState() {
 	c.Purge()
 }
 
+// CommandHandler defines either a SubCommandHandler
+// or a SubCommandGroup.
+type CommandHandler interface {
+	Type() discordgo.ApplicationCommandOptionType
+	OptionName() string
+	RunHandler(ctx SubCommandContext) error
+}
+
 // SubCommandHandler is the handler function used
 // to handle sub command calls.
 type SubCommandHandler struct {
 	Name string
 	Run  func(ctx SubCommandContext) error
+}
+
+func (t SubCommandHandler) Type() discordgo.ApplicationCommandOptionType {
+	return discordgo.ApplicationCommandOptionSubCommand
+}
+
+func (t SubCommandHandler) OptionName() string {
+	return t.Name
+}
+
+func (t SubCommandHandler) RunHandler(ctx SubCommandContext) error {
+	return t.Run(ctx)
+}
+
+// SubCommandGroup is the handler used to group
+// sub commands.
+type SubCommandGroup struct {
+	Name       string
+	SubHandler []CommandHandler
+}
+
+func (t SubCommandGroup) Type() discordgo.ApplicationCommandOptionType {
+	return discordgo.ApplicationCommandOptionSubCommandGroup
+}
+
+func (t SubCommandGroup) OptionName() string {
+	return t.Name
+}
+
+func (t SubCommandGroup) RunHandler(ctx SubCommandContext) error {
+	return ctx.HandleSubCommands(t.SubHandler...)
 }
 
 // SubCommandContext wraps the current command
@@ -376,7 +416,7 @@ type SubCommandContext interface {
 }
 
 type subCommandCtx struct {
-	*Ctx
+	Context
 
 	subCommandName string
 }
@@ -386,11 +426,15 @@ var _ SubCommandContext = (*subCommandCtx)(nil)
 // Options returns the options array of the called
 // sub command.
 func (c *subCommandCtx) Options() CommandOptions {
-	return c.Ctx.Options().GetByName(c.subCommandName).Options
+	return c.Context.Options().GetByName(c.subCommandName).Options
 }
 
 func (c *subCommandCtx) GetSubCommandName() string {
 	return c.subCommandName
+}
+
+func (c *subCommandCtx) HandleSubCommands(handler ...CommandHandler) (err error) {
+	return handleSubCommands(c, handler)
 }
 
 // HandleSubCommands takes a list of sub command handles.
@@ -404,21 +448,8 @@ func (c *subCommandCtx) GetSubCommandName() string {
 //
 // The SubCommandCtx passed must not be stored or used
 // after command execution.
-func (c *Ctx) HandleSubCommands(handler ...SubCommandHandler) (err error) {
-	for _, h := range handler {
-		opt := c.Options().Get(0)
-		if opt.Type != discordgo.ApplicationCommandOptionSubCommand || opt.Name != h.Name {
-			continue
-		}
-
-		ctx := c.ken.subCtxPool.Get()
-		ctx.Ctx = c
-		ctx.subCommandName = h.Name
-		err = h.Run(ctx)
-		c.ken.subCtxPool.Put(ctx)
-		break
-	}
-	return
+func (c *Ctx) HandleSubCommands(handler ...CommandHandler) (err error) {
+	return handleSubCommands(c, handler)
 }
 
 // GetKen returns the root instance of Ken.
@@ -536,6 +567,25 @@ func (c modalCtx) GetData() discordgo.ModalSubmitInteractionData {
 
 func (c modalCtx) GetComponentByID(customId string) MessageComponent {
 	return MessageComponent{getComponentByID(customId, c.GetData().Components)}
+}
+
+// -------------------------------------------------------------------------------------------------
+
+func handleSubCommands(c Context, handler []CommandHandler) (err error) {
+	opt := c.Options().Get(0)
+	for _, h := range handler {
+		if opt.Type != h.Type() || opt.Name != h.OptionName() {
+			continue
+		}
+
+		ctx := c.GetKen().subCtxPool.Get()
+		ctx.Context = c
+		ctx.subCommandName = h.OptionName()
+		err = h.RunHandler(ctx)
+		c.GetKen().subCtxPool.Put(ctx)
+		break
+	}
+	return err
 }
 
 func getComponentByID(

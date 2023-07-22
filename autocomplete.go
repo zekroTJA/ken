@@ -110,15 +110,16 @@ func (t *AutocompleteContext) GetInput(optionName string) (value string, ok bool
 	return AutoCompleteOptions{t.GetData().Options, ""}.GetInput(optionName)
 }
 
-// SubCommand returns the sub command options for any of the given sub commands.
+// SubCommand returns the sub command options for any of the given sub command or
+// sub command group.
 // If no command name is passed, the sub command options are returned from the first
 // sub command found in the event.
 func (t *AutocompleteContext) SubCommand(name ...string) AutoCompleteOptions {
 	opts := t.GetData().Options
 	subCmdOptions := make([]*discordgo.ApplicationCommandInteractionDataOption, 0, len(opts))
-	// TODO: If sub command groups get implemented, this needs to be adjusted accordingly
 	for _, opt := range opts {
-		if opt.Type == discordgo.ApplicationCommandOptionSubCommand {
+		if opt.Type == discordgo.ApplicationCommandOptionSubCommand ||
+			opt.Type == discordgo.ApplicationCommandOptionSubCommandGroup {
 			subCmdOptions = append(subCmdOptions, opt)
 		}
 	}
