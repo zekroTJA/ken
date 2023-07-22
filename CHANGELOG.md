@@ -1,70 +1,51 @@
 [VERSION]
 
-> **Warning**  
-> This update contains breaking changes! 
+## Sub Command Support [#14]
 
-In order to make the code of ken more type-safe, I am now using [safepool](https://github.com/zekrotja/safepool) 
-instead of `sync.Pool` which uses generic type parameters for ensuring type safety. Therefore, the minimum
-required module version has been bumped to `go1.18`. You might need to upgrade your project accordingly to
-be able to use ken.
+Finally, you can now register and use sub command groups!
 
-## Autocomplete Support [#18]
-
-[Command option autocomplete](https://discord.com/developers/docs/interactions/application-commands#autocomplete)
-support has now been added to ken.
-
-Simply enable autocomplete on your command option by setting the `Autocomplete` property to `true`.
+Simply add a sub command option to your command in the `Options` implementation of your command.
 
 *Example:*
 ```go
-func (c *TestCommand) Options() []*discordgo.ApplicationCommandOption {
+func (c *SubsCommand) Options() []*discordgo.ApplicationCommandOption {
 	return []*discordgo.ApplicationCommandOption{
 		{
-			Type:         discordgo.ApplicationCommandOptionString,
-			Name:         "language",
-			Required:     true,
-			Description:  "Choose a programming language.",
-			Autocomplete: true,
+			Type:        discordgo.ApplicationCommandOptionSubCommandGroup,
+			Name:        "group",
+			Description: "Some sub command gorup",
+			Options: []*discordgo.ApplicationCommandOption{
+				// ...
+			},
 		},
 	}
 }
 ```
 
-Now, you simply need to implement the [`AutocompleteCommand`](https://pkg.go.dev/github.com/zekrotja/ken#Command) 
-on your command.
+Now, you can add a [`SubCommandGroup`](https://pkg.go.dev/github.com/zekrotja/ken#SubCommandGroup) handler to your `HandleSubCommands` method to register sub commands in the group.
 
 *Example:*
 ```go
-func (c *TestCommand) Autocomplete(ctx *ken.AutocompleteContext) ([]*discordgo.ApplicationCommandOptionChoice, error) {
-	input, ok := ctx.GetInput("language")
-
-	if !ok {
-		return nil, nil
-	}
-
-	choises := make([]*discordgo.ApplicationCommandOptionChoice, 0, len(programmingLanguages))
-	input = strings.ToLower(input)
-
-	for _, lang := range programmingLanguages {
-		if strings.HasPrefix(lang[1], input) {
-			choises = append(choises, &discordgo.ApplicationCommandOptionChoice{
-				Name:  lang[0],
-				Value: lang[0],
-			})
-		}
-	}
-
-	return choises, nil
+func (c *SubsCommand) Run(ctx ken.Context) (err error) {
+	err = ctx.HandleSubCommands(
+		ken.SubCommandGroup{"group", []ken.CommandHandler{
+			ken.SubCommandHandler{"one", c.one},
+			ken.SubCommandHandler{"two", c.two},
+		}},
+	)
+	return
 }
 ```
 
-> The full example can be found in [examples/autocomplete](https://github.com/zekroTJA/ken/tree/master/examples/autocomplete).
+> The full example can be found in [examples/subcommandgroups](https://github.com/zekroTJA/ken/tree/master/examples/subcommandgroups).
 
-To properly handle errors occuring during autocomplete handling, a new command handler hook `OnEventError` has been added to the [`Options`](https://pkg.go.dev/github.com/zekrotja/ken#Options). It will be called every time a non-command related user event error occurs.
+## Minor Changes
 
-## `RespondMessage`
+- The [`AutocompleteContext`](https://pkg.go.dev/github.com/zekrotja/ken#AutocompleteContext) now implements [`ObjectMap`](https://pkg.go.dev/github.com/zekrotja/ken#ObjectMap) so you can pass dependencies down the line just like with command contexts.
 
-A new respond method has been added to the `ContentResponder` called [`RespondMessage`](https://pkg.go.dev/github.com/zekrotja/ken#Ctx.RespondMessage). It simply takes a message as parameter and responds with a simple message content containing the passed message.
+- [`AutocompleteContext`](https://pkg.go.dev/github.com/zekrotja/ken#AutocompleteContext) now has a new helper function [`GetInputAny`](https://pkg.go.dev/github.com/zekrotja/ken#AutocompleteContext.GetInputAny) which takes multiple option names and returns the first match found in the event data.
+
+- [`FoolowUpMessage`](https://pkg.go.dev/github.com/zekrotja/ken#FollowUpMessage) has now been added accordingly to [`RespondMessage`](https://pkg.go.dev/github.com/zekrotja/ken@master#Ctx.RespondMessage), which was added in `v0.19.0`.
 
 ## Update
 
