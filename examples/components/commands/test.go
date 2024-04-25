@@ -8,7 +8,6 @@ import (
 )
 
 type TestCommand struct {
-	ken.EphemeralCommand
 }
 
 var (
