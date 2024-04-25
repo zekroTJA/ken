@@ -3,7 +3,7 @@ module github.com/zekrotja/ken
 go 1.18
 
 require (
-	github.com/bwmarrin/discordgo v0.27.1
+	github.com/bwmarrin/discordgo v0.28.1
 	github.com/rs/xid v1.5.0
 	github.com/zekroTJA/timedmap v1.5.1
 	github.com/zekrotja/dgrs v0.5.7

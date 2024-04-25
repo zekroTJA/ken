@@ -199,7 +199,7 @@ func (t *ComponentBuilder) build() (unreg func() error, err error) {
 				t.ch.ken.s.ChannelMessageEditComplex(&discordgo.MessageEdit{
 					ID:         t.msgId,
 					Channel:    t.chanId,
-					Components: t.components,
+					Components: &t.components,
 				})
 				kRems := make([]string, 0, len(handler.onceGroup))
 				for _, kRem := range handler.onceGroup {
@@ -219,7 +219,7 @@ func (t *ComponentBuilder) build() (unreg func() error, err error) {
 				t.ch.ken.s.ChannelMessageEditComplex(&discordgo.MessageEdit{
 					ID:         t.msgId,
 					Channel:    t.chanId,
-					Components: t.components,
+					Components: &t.components,
 				})
 
 				t.ch.Unregister(k)
@@ -236,7 +236,7 @@ func (t *ComponentBuilder) build() (unreg func() error, err error) {
 		_, err := t.ch.ken.s.ChannelMessageEditComplex(&discordgo.MessageEdit{
 			ID:         t.msgId,
 			Channel:    t.chanId,
-			Components: []discordgo.MessageComponent{},
+			Components: &[]discordgo.MessageComponent{},
 		})
 		if err != nil {
 			return err
