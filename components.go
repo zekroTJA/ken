@@ -109,7 +109,7 @@ func (t *ComponentHandler) AppendToMessage(
 	_, err := t.ken.s.ChannelMessageEditComplex(&discordgo.MessageEdit{
 		ID:         messageId,
 		Channel:    channelId,
-		Components: components,
+		Components: &components,
 	})
 	return err
 }
